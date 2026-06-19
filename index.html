@@ -1,0 +1,1784 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dinda & Faisal — 05 Juli 2026</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,200;0,9..40,300;0,9..40,400;1,9..40,200&family=Cinzel:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              serif: ['"Cormorant Garamond"', "serif"],
+              display: ["Cinzel", "serif"],
+              arabic: ["Amiri", "serif"],
+              sans: ['"DM Sans"', "sans-serif"],
+            },
+            colors: {
+              bg: "#16130F",
+              bg2: "#1C1810",
+              ink: "#E8E0D0",
+              gold: "#B8935A",
+              "gold-lt": "#D4AF7A",
+            },
+            borderColor: { divider: "rgba(232,224,208,0.12)" },
+          },
+        },
+      };
+    </script>
+    <script
+      defer
+      src="https://unpkg.com/lucide@0.383.0/dist/umd/lucide.js"
+    ></script>
+
+    <style>
+      /* ── BASE ─────────────────────────────────────────────── */
+      @media (hover: hover) and (pointer: fine) {
+        body {
+          cursor: none;
+        }
+      }
+      ::selection {
+        background: #b8935a;
+        color: #16130f;
+      }
+      ::-webkit-scrollbar {
+        width: 3px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #16130f;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #b8935a;
+        border-radius: 2px;
+      }
+
+      /* ── GRAIN ────────────────────────────────────────────── */
+      .grain {
+        position: fixed;
+        inset: 0;
+        z-index: 9998;
+        pointer-events: none;
+        opacity: 0.03;
+        mix-blend-mode: overlay;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      }
+
+      /* ── CURSOR ───────────────────────────────────────────── */
+      #c-dot {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 5px;
+        height: 5px;
+        background: #e8e0d0;
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 10000;
+        transform: translate(-50%, -50%);
+        mix-blend-mode: difference;
+        will-change: transform;
+      }
+      #c-ring {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 32px;
+        height: 32px;
+        border: 1px solid rgba(232, 224, 208, 0.35);
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 9999;
+        transform: translate(-50%, -50%);
+        transition:
+          width 0.25s,
+          height 0.25s,
+          border-color 0.25s,
+          background 0.25s;
+        will-change: transform;
+      }
+
+      /* ── ENVELOPE ─────────────────────────────────────────── */
+      #envelope-screen {
+        position: fixed;
+        inset: 0;
+        z-index: 5000;
+        background: #16130f;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+      }
+
+      /* ── ENV LOADING BAR ──────────────────────────────────── */
+      #env-load-bar-wrap {
+        width: 100%;
+        height: 1px;
+        background: rgba(232, 224, 208, 0.08);
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        overflow: hidden;
+        opacity: 0;
+        transition: opacity 0.4s;
+      }
+      #env-load-bar-wrap.is-loading {
+        opacity: 1;
+      }
+      #env-load-bar {
+        height: 100%;
+        width: 0%;
+        background: #b8935a;
+        transition: width 0.3s ease-out;
+      }
+      .env-open-btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        pointer-events: none;
+      }
+      #env-load-label {
+        font-family: "Cinzel", serif;
+        font-size: 8px;
+        letter-spacing: 0.25em;
+        text-transform: uppercase;
+        color: rgba(232, 224, 208, 0.35);
+        margin-top: 12px;
+        height: 16px;
+        opacity: 0;
+        transition: opacity 0.3s;
+      }
+      #env-load-label.is-visible {
+        opacity: 1;
+      }
+
+      /* ── HERO SLIDES ──────────────────────────────────────── */
+      .hero-slide {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        will-change: opacity, transform;
+        backface-visibility: hidden;
+      }
+      .hero-slide:first-child {
+        opacity: 1;
+      }
+      .hero-slide img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center bottom;
+        will-change: transform;
+        backface-visibility: hidden;
+        transform-origin: center center;
+      }
+
+      /* ── REVEAL ───────────────────────────────────────────── */
+      .reveal {
+        opacity: 0;
+        transform: translateY(36px);
+        will-change: transform, opacity;
+      }
+      .split-word {
+        display: inline-block;
+        will-change: transform, opacity;
+      }
+
+      /* ── SCROLL HINT ──────────────────────────────────────── */
+      @keyframes scrollPulse {
+        0%,
+        100% {
+          opacity: 0.3;
+        }
+        50% {
+          opacity: 1;
+        }
+      }
+      .scroll-line {
+        animation: scrollPulse 2s ease-in-out infinite;
+      }
+
+      /* ── GIFT CARD ────────────────────────────────────────── */
+      .gift-card::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 2px;
+        height: 100%;
+        background: #b8935a;
+        transform: scaleY(0);
+        transform-origin: top;
+        transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        will-change: transform;
+      }
+      .gift-card:hover::before {
+        transform: scaleY(1);
+      }
+
+      /* ── WISH CARD ────────────────────────────────────────── */
+      .wish-item::before {
+        content: "\201C";
+        font-family: "Cormorant Garamond", serif;
+        font-size: 3.5rem;
+        line-height: 1;
+        color: rgba(184, 147, 90, 0.18);
+        position: absolute;
+        top: 14px;
+        left: 22px;
+        pointer-events: none;
+        user-select: none;
+      }
+
+      /* ── MUSIC ────────────────────────────────────────────── */
+      #music-toggle {
+        -webkit-tap-highlight-color: transparent;
+      }
+      @keyframes discSpin {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      #music-icon.spinning {
+        animation: discSpin 6s linear infinite;
+      }
+
+      /* ── REDUCED MOTION ───────────────────────────────────── */
+      @media (prefers-reduced-motion: reduce) {
+        .scroll-line {
+          animation: none;
+        }
+        #music-icon.spinning {
+          animation: none;
+        }
+      }
+    </style>
+  </head>
+  <body class="bg-bg text-ink font-sans overflow-x-hidden">
+    <div class="grain"></div>
+    <div id="c-dot"></div>
+    <div id="c-ring"></div>
+
+    <div id="envelope-screen">
+      <div
+        class="absolute inset-0 pointer-events-none"
+        style="
+          background: radial-gradient(
+            ellipse 70% 60% at 50% 50%,
+            transparent 30%,
+            rgba(0, 0, 0, 0.65) 100%
+          );
+        "
+      ></div>
+      <div
+        class="absolute inset-0 pointer-events-none opacity-[0.04]"
+        style="
+          background-image: repeating-linear-gradient(
+            45deg,
+            #e8e0d0 0,
+            #e8e0d0 0.5px,
+            transparent 0,
+            transparent 50%
+          );
+          background-size: 12px 12px;
+        "
+      ></div>
+
+      <div
+        id="env-card"
+        class="relative w-[min(440px,90vw)] bg-[#1F1B14] border border-gold/30 px-10 md:px-12 py-14 text-center overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,.6)] group"
+        style="cursor: default"
+      >
+        <div class="absolute inset-0 pointer-events-none">
+          <svg
+            class="absolute top-0 left-0 w-full h-[38%]"
+            viewBox="0 0 100 100"
+            preserveAspectRatio="none"
+          >
+            <polygon
+              points="0,0 100,0 50,100"
+              fill="#1F1B14"
+              stroke="rgba(184,147,90,.2)"
+              stroke-width=".5"
+            />
+          </svg>
+          <svg
+            class="absolute bottom-0 left-0 w-full h-[62%]"
+            viewBox="0 0 100 100"
+            preserveAspectRatio="none"
+          >
+            <polyline
+              points="0,100 50,0 100,100"
+              fill="none"
+              stroke="rgba(184,147,90,.1)"
+              stroke-width=".5"
+            />
+          </svg>
+        </div>
+        <div
+          class="absolute top-4 left-4 w-9 h-9 border-t border-l border-gold/40"
+        ></div>
+        <div
+          class="absolute top-4 right-4 w-9 h-9 border-t border-r border-gold/40"
+        ></div>
+        <div
+          class="absolute bottom-4 left-4 w-9 h-9 border-b border-l border-gold/40"
+        ></div>
+        <div
+          class="absolute bottom-4 right-4 w-9 h-9 border-b border-r border-gold/40"
+        ></div>
+
+        <div class="relative z-10 flex flex-col items-center">
+          <div
+            class="w-[60px] h-[60px] rounded-full flex items-center justify-center mb-8 font-display text-lg text-white/60 shrink-0 group-hover:scale-105 transition-transform duration-500 shadow-[0_4px_24px_rgba(139,26,26,.4),inset_0_1px_0_rgba(255,255,255,.15)]"
+            style="
+              background: radial-gradient(circle at 35% 35%, #8b1a1a, #5c1111);
+              border: 2px solid rgba(139, 26, 26, 0.4);
+            "
+          >
+            DF
+          </div>
+          <span
+            class="font-display text-[9px] tracking-[.35em] uppercase text-gold/90 mb-1"
+            >Wedding Invitation</span
+          >
+          <span
+            class="font-sans text-[9px] tracking-[.2em] uppercase text-ink/40 mb-5"
+            >The Wedding Of</span
+          >
+          <h1
+            class="font-serif text-[clamp(2.8rem,10vw,4rem)] font-light leading-[1.05] text-ink mb-2"
+          >
+            Dinda
+            <em class="block my-1 text-[.55em] text-gold-lt font-serif italic"
+              >&</em
+            >
+            Faisal
+          </h1>
+          <div class="flex items-center gap-3 w-full my-5 opacity-60">
+            <span class="flex-1 h-px bg-ink/20"></span>
+            <i data-lucide="diamond" class="w-2.5 h-2.5 text-gold"></i>
+            <span class="flex-1 h-px bg-ink/20"></span>
+          </div>
+          <p
+            class="font-sans text-[9px] tracking-[.25em] uppercase text-ink/45 mb-8"
+          >
+            Minggu, 05 Juli 2026 · Bogor
+          </p>
+
+          <button
+            id="env-open-btn"
+            class="env-open-btn inline-flex items-center gap-2 font-display text-[9px] tracking-[.3em] uppercase text-bg bg-gold hover:bg-gold-lt border-none outline-none px-8 py-3.5 cursor-pointer transition-colors duration-300"
+            type="button"
+            disabled
+            onclick="openInvitation()"
+          >
+            <i data-lucide="mail-open" class="w-3 h-3"></i>
+            <span id="env-btn-label">Buka Undangan</span>
+          </button>
+
+          <div id="env-load-label">Memuat foto…</div>
+        </div>
+        <div id="env-load-bar-wrap">
+          <div id="env-load-bar"></div>
+        </div>
+      </div>
+      <p
+        id="env-hint"
+        class="mt-8 font-sans text-[10px] tracking-[.2em] uppercase text-ink/30 opacity-0"
+      >
+        Tekan untuk membuka
+      </p>
+    </div>
+
+    <div id="main-content" class="invisible opacity-0">
+      <audio
+        id="bg-music"
+        src="/Lagu/Perfection.mp3"
+        loop
+        preload="none"
+      ></audio>
+      <button
+        id="music-toggle"
+        type="button"
+        aria-label="Putar musik"
+        class="fixed bottom-6 right-6 z-[4000] w-12 h-12 rounded-full border border-gold/40 bg-bg2/70 backdrop-blur-sm flex items-center justify-center text-gold hover:border-gold hover:text-gold-lt transition-colors duration-300"
+      >
+        <i data-lucide="disc-3" id="music-icon" class="w-5 h-5"></i>
+      </button>
+
+      <nav
+        class="fixed top-0 left-0 w-full z-50 px-6 md:px-10 py-6 flex justify-between items-center pointer-events-none"
+        style="mix-blend-mode: difference"
+      >
+        <span
+          id="nav-to-events"
+          class="nav-word font-display text-[9px] tracking-[.3em] uppercase text-ink opacity-0 pointer-events-auto cursor-pointer"
+          >04 – 05 Juli 2026</span
+        >
+        <span
+          id="nav-to-top"
+          class="nav-word font-display text-[9px] tracking-[.3em] uppercase text-ink opacity-0 pointer-events-auto cursor-pointer"
+          >Dinda & Faisal</span
+        >
+      </nav>
+
+      <section id="hero" class="relative h-svh overflow-hidden">
+        <div class="hero-slide" id="slide-0">
+          <img
+            id="hero-img-0"
+            src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08054-1.webp"
+            alt="Dinda & Faisal"
+            fetchpriority="high"
+            decoding="async"
+            width="1920"
+            height="1080"
+          />
+        </div>
+        <div class="hero-slide" id="slide-1">
+          <img
+            src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08055.webp"
+            alt="Dinda & Faisal"
+            loading="lazy"
+            decoding="async"
+            width="1920"
+            height="1080"
+          />
+        </div>
+        <div class="hero-slide" id="slide-2">
+          <img
+            src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08056.webp"
+            alt="Dinda & Faisal"
+            loading="lazy"
+            decoding="async"
+            width="1920"
+            height="1080"
+          />
+        </div>
+        <div class="hero-slide" id="slide-3">
+          <img
+            src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08057.webp"
+            alt="Dinda & Faisal"
+            loading="lazy"
+            decoding="async"
+            width="1920"
+            height="1080"
+          />
+        </div>
+        <div class="hero-slide" id="slide-4">
+          <img
+            src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08058.webp"
+            alt="Dinda & Faisal"
+            loading="lazy"
+            decoding="async"
+            width="1920"
+            height="1080"
+          />
+        </div>
+        <div class="hero-slide" id="slide-5">
+          <img
+            src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08059.webp"
+            alt="Dinda & Faisal"
+            loading="lazy"
+            decoding="async"
+            width="1920"
+            height="1080"
+          />
+        </div>
+        <div class="hero-slide" id="slide-6">
+          <img
+            src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08060.webp"
+            alt="Dinda & Faisal"
+            loading="lazy"
+            decoding="async"
+            width="1920"
+            height="1080"
+          />
+        </div>
+        <div class="hero-slide" id="slide-7">
+          <img
+            src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08062.webp"
+            alt="Dinda & Faisal"
+            loading="lazy"
+            decoding="async"
+            width="1920"
+            height="1080"
+          />
+        </div>
+        <div class="hero-slide" id="slide-8">
+          <img
+            src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08054 (1).jpg"
+            alt="Dinda & Faisal"
+            loading="lazy"
+            decoding="async"
+            width="1920"
+            height="1080"
+          />
+        </div>
+        <div class="hero-slide" id="slide-9">
+          <img
+            src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08054 (11).webp"
+            alt="Dinda & Faisal"
+            loading="lazy"
+            decoding="async"
+            width="1920"
+            height="1080"
+          />
+        </div>
+        <div class="hero-slide" id="slide-10">
+          <img
+            src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08054 (12).webp"
+            alt="Dinda & Faisal"
+            loading="lazy"
+            decoding="async"
+            width="1920"
+            height="1080"
+          />
+        </div>
+        <div class="hero-slide" id="slide-11">
+          <img
+            src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08059 (1).webp"
+            alt="Dinda & Faisal"
+            loading="lazy"
+            decoding="async"
+            width="1920"
+            height="1080"
+          />
+        </div>
+
+        <div
+          class="absolute inset-0 z-[1] pointer-events-none"
+          style="
+            background: linear-gradient(
+              180deg,
+              rgba(22, 19, 15, 0.72) 0%,
+              rgba(22, 19, 15, 0.2) 35%,
+              rgba(22, 19, 15, 0.15) 60%,
+              rgba(22, 19, 15, 0.85) 100%
+            );
+          "
+        ></div>
+
+        <div
+          class="absolute inset-x-0 bottom-0 z-[2] flex items-end justify-center pointer-events-none select-none overflow-hidden leading-none"
+          style="height: 55%"
+        >
+          <span
+            class="font-serif font-light text-ink/[.05]"
+            style="
+              font-size: clamp(7rem, 28vw, 22rem);
+              letter-spacing: -0.04em;
+              line-height: 1;
+            "
+            >2026</span
+          >
+        </div>
+
+        <div
+          class="absolute inset-0 z-[3] flex flex-col items-center justify-center text-center px-6 pt-10"
+        >
+          <span
+            class="hero-stagger font-serif italic text-ink/70 mb-3 block opacity-0"
+            style="font-size: clamp(1rem, 2.5vw, 1.3rem)"
+            >Dear,</span
+          >
+          <h1
+            class="hero-stagger font-serif font-light leading-[0.95] text-ink opacity-0 drop-shadow-md"
+            style="font-size: clamp(3rem, 15vw, 11rem); letter-spacing: -0.02em"
+          >
+            <span class="block">Dinda</span>
+            <span class="block"
+              ><span
+                class="font-serif italic text-gold"
+                style="font-size: 0.5em; padding: 0 0.12em"
+                >&</span
+              >Faisal</span
+            >
+          </h1>
+          <p
+            class="hero-stagger font-sans text-ink/60 mt-5 mb-2 opacity-0 leading-relaxed"
+            style="font-size: clamp(0.75rem, 1.5vw, 0.9rem); max-width: 420px"
+          >
+            Mengundang Anda untuk hadir di pernikahan kami pada
+          </p>
+          <p
+            class="hero-stagger font-display uppercase tracking-[.25em] text-gold-lt font-semibold opacity-0"
+            style="
+              font-size: clamp(0.95rem, 1.8vw, 1.25rem);
+              text-shadow:
+                0 2px 18px rgba(22, 13, 9, 0.95),
+                0 1px 4px rgba(0, 0, 0, 0.9);
+            "
+          >
+            Minggu, 05 Juli 2026
+          </p>
+          <span
+            id="hero-tagline"
+            class="hero-stagger font-serif italic text-ink/40 mt-6 block opacity-0"
+            style="
+              font-size: clamp(0.85rem, 2vw, 1.1rem);
+              min-height: 1.6em;
+              letter-spacing: 0.04em;
+            "
+            >Awalnya cuma kenalan…</span
+          >
+        </div>
+
+        <div
+          class="hero-scroll-hint absolute bottom-10 left-1/2 -translate-x-1/2 z-[3] flex flex-col items-center gap-2.5 opacity-0"
+        >
+          <span
+            class="font-display text-[8px] tracking-[.3em] uppercase text-ink/30"
+            >Scroll</span
+          >
+          <div
+            class="scroll-line w-px h-12 bg-gradient-to-b from-gold to-transparent"
+          ></div>
+        </div>
+      </section>
+
+      <section
+        class="relative py-28 md:py-36 px-[5vw] bg-bg2 text-center border-t border-b border-divider overflow-hidden"
+      >
+        <div
+          class="absolute top-[-30px] left-[5vw] font-serif italic text-gold/[.03] pointer-events-none select-none leading-none"
+          style="font-size: 400px"
+        >
+          “
+        </div>
+        <div class="reveal max-w-3xl mx-auto relative">
+          <p
+            class="font-arabic text-ink/90 mb-7 leading-[2.4]"
+            style="font-size: clamp(1.2rem, 2.8vw, 1.8rem)"
+            dir="rtl"
+          >
+            وَمِنْ آيَاتِهِ أَنْ خَلَقَ لَكُمْ مِنْ أَنْفُسِكُمْ أَزْوَاجًا
+            لِتَسْكُنُوا إِلَيْهَا وَجَعَلَ بَيْنَكُمْ مَوَدَّةً وَرَحْمَةً ۚ
+            إِنَّ فِي ذَٰلِكَ لَآيَاتٍ لِقَوْمٍ يَتَفَكَّرُونَ
+          </p>
+          <p
+            class="font-serif italic text-ink/50 max-w-xl mx-auto mb-5 leading-[1.85]"
+            style="font-size: clamp(0.88rem, 1.7vw, 1.05rem)"
+          >
+            "Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan
+            untukmu pasangan dari jenismu sendiri, supaya kamu merasa tenteram
+            kepadanya, dan dijadikan-Nya di antaramu rasa kasih dan sayang."
+          </p>
+          <span
+            class="font-display text-[9px] tracking-[.3em] uppercase text-gold/70"
+            >Q.S. Ar-Rum : 21</span
+          >
+        </div>
+      </section>
+
+      <section
+        id="kisah-kami"
+        class="relative py-[160px] md:py-[200px] px-[5vw] overflow-hidden bg-bg border-b border-divider"
+      >
+        <div
+          class="relative w-full max-w-[1200px] mx-auto min-h-[900px] flex items-center justify-center"
+        >
+          <div class="absolute inset-0 pointer-events-none z-0">
+            <div
+              class="story-card absolute top-[5%] left-[0%] md:left-[5%] w-[45vw] md:w-[22vw] aspect-[3/4] overflow-hidden opacity-60 grayscale border border-white/5"
+            >
+              <img
+                src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08054-1.webp"
+                class="w-full h-full object-cover opacity-15"
+                alt="Kisah 1"
+              />
+            </div>
+            <div
+              class="story-card absolute top-[28%] right-[0%] md:right-[5%] w-[50vw] md:w-[26vw] aspect-[3/4] overflow-hidden opacity-60 grayscale border border-white/5"
+            >
+              <img
+                src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08057.webp"
+                class="w-full h-full object-cover opacity-15"
+                alt="Kisah 2"
+              />
+            </div>
+            <div
+              class="story-card absolute top-[55%] left-[5%] md:left-[10%] w-[48vw] md:w-[25vw] aspect-[3/4] overflow-hidden opacity-60 grayscale border border-white/5"
+            >
+              <img
+                src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08059.webp"
+                class="w-full h-full object-cover opacity-15"
+                alt="Kisah 3"
+              />
+            </div>
+            <div
+              class="story-card absolute top-[75%] right-[5%] md:right-[15%] w-[55vw] md:w-[28vw] aspect-[3/4] overflow-hidden opacity-60 grayscale border border-white/5"
+            >
+              <img
+                src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08062.webp"
+                class="w-full h-full object-cover opacity-15"
+                alt="Kisah 4"
+              />
+            </div>
+          </div>
+
+          <div
+            class="relative z-10 w-full max-w-2xl px-2 md:px-0 drop-shadow-2xl flex flex-col justify-center"
+          >
+            <div class="story-text-line flex items-center gap-3 mb-8">
+              <div class="w-1.5 h-1.5 bg-ink"></div>
+              <span
+                class="font-display text-[9px] tracking-[.35em] uppercase text-gold"
+                >Kisah Kami</span
+              >
+              <div class="w-6 h-6 border border-ink/30 rounded-full ml-1"></div>
+            </div>
+
+            <h2
+              class="story-text-line font-serif font-light text-ink leading-snug mb-10 text-left"
+              style="font-size: clamp(2rem, 4vw, 3.2rem)"
+            >
+              Dari satu nama yang disebut,<br />
+              sampai satu rumah yang<br />
+              dibangun.
+            </h2>
+
+            <p
+              class="story-text-line font-sans text-ink/60 leading-relaxed text-[0.85rem] mb-6 text-left max-w-[95%]"
+            >
+              Awalnya cuma nama yang lewat di obrolan teman —
+              <em class="italic">"dia orangnya baik, loh"</em>.<br />
+              Satu pesan singkat, dibalas dua jam kemudian. Lalu janji ngopi
+              yang berakhir<br />
+              saat lampu kedai dimatikan.
+            </p>
+
+            <blockquote
+              class="story-text-line font-serif italic text-ink/90 text-[1.1rem] leading-relaxed border-l-2 border-gold pl-6 mb-6 text-left max-w-[95%]"
+            >
+              Bukan mereka yang mempertemukan kami. Tapi Allah yang<br />
+              menautkan hati kami.
+            </blockquote>
+
+            <p
+              class="story-text-line font-sans text-ink/60 leading-relaxed text-[0.85rem] mb-8 text-left max-w-[95%]"
+            >
+              Dua tahun penuh warna. Ada pertengkaran kecil yang berakhir dengan
+              tawa,<br />
+              ada jarak yang justru membuat kami semakin yakin. Jodoh itu tidak
+              datang<br />
+              dengan riuh — dia datang pelan, tapi pasti. Seperti fajar.
+            </p>
+
+            <p
+              class="story-text-line font-sans italic text-gold/80 text-[0.85rem] text-left"
+            >
+              Terima kasih sudah mau dikenalkan. Terima kasih sudah bertahan.
+              Terima kasih<br />
+              sudah memilih untuk menjadi imam dalam hidupku.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="py-28 md:py-36 px-[5vw] bg-bg2 border-t border-divider">
+        <div class="text-center mb-16 reveal">
+          <h2
+            class="font-serif font-light text-ink mb-3"
+            style="font-size: clamp(2rem, 5vw, 3.2rem)"
+          >
+            Mempelai
+          </h2>
+          <p
+            class="font-sans text-[.75rem] tracking-[.15em] uppercase text-ink/35"
+          >
+            Yang berbahagia
+          </p>
+        </div>
+        <div
+          class="grid grid-cols-1 sm:grid-cols-2 max-w-[800px] mx-auto border border-divider reveal"
+        >
+          <div
+            class="relative text-center px-10 py-12 border-b sm:border-b-0 sm:border-r border-divider"
+          >
+            <div
+              class="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-gold"
+            ></div>
+            <span
+              class="font-display text-[8px] tracking-[.3em] uppercase text-gold mb-4 block"
+              >Mempelai Wanita</span
+            >
+            <div
+              class="font-serif font-light text-ink mb-1.5"
+              style="font-size: clamp(1.5rem, 3vw, 2rem)"
+            >
+              Dinda Parawansa
+            </div>
+            <p class="font-sans text-[.72rem] text-ink/35 leading-relaxed">
+              Putri dari Bpk. & Ibu Parawansa
+            </p>
+          </div>
+          <div class="relative text-center px-10 py-12">
+            <div
+              class="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-gold"
+            ></div>
+            <span
+              class="font-display text-[8px] tracking-[.3em] uppercase text-gold mb-4 block"
+              >Mempelai Pria</span
+            >
+            <div
+              class="font-serif font-light text-ink mb-1.5"
+              style="font-size: clamp(1.5rem, 3vw, 2rem)"
+            >
+              Achmad Faisal
+            </div>
+            <p class="font-sans text-[.72rem] text-ink/35 leading-relaxed">
+              Putra dari Bpk. & Ibu Faisal
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section id="acara" class="relative py-32 md:py-40 px-[5vw]">
+        <div
+          class="absolute inset-x-0 top-16 text-center pointer-events-none select-none"
+        >
+          <span
+            class="font-serif font-light leading-none text-gold/[.04]"
+            style="font-size: clamp(5rem, 20vw, 16rem); letter-spacing: -0.04em"
+            >2026</span
+          >
+        </div>
+        <div class="text-center mb-16 reveal relative">
+          <h2
+            class="font-serif font-light text-ink"
+            style="font-size: clamp(2rem, 5vw, 3.2rem)"
+          >
+            Rangkaian Acara
+          </h2>
+        </div>
+        <div
+          class="grid grid-cols-1 sm:grid-cols-2 max-w-[900px] mx-auto border border-divider reveal"
+        >
+          <div
+            class="p-12 sm:p-14 border-b sm:border-b-0 sm:border-r border-divider"
+          >
+            <span
+              class="font-serif font-light text-gold/20 block leading-none mb-4"
+              style="font-size: 5rem"
+              >04</span
+            >
+            <h3 class="font-serif font-light text-ink text-2xl mb-1">
+              Syukuran
+            </h3>
+            <span
+              class="font-display text-[8px] tracking-[.3em] uppercase text-ink/35 mb-7 block"
+              >Kediaman Mempelai Pria</span
+            >
+            <div
+              class="font-sans text-ink/55 leading-[1.8]"
+              style="font-size: 0.8rem"
+            >
+              <strong class="text-ink font-normal">Sabtu, 04 Juli 2026</strong
+              ><br />19 Muharam 1448 H<br /><span class="text-ink/30 text-xs"
+                >Waktu menyusul</span
+              >
+            </div>
+          </div>
+          <div class="p-12 sm:p-14">
+            <span
+              class="font-serif font-light text-gold/20 block leading-none mb-4"
+              style="font-size: 5rem"
+              >05</span
+            >
+            <h3 class="font-serif font-light text-ink text-2xl mb-1">
+              Akad & Resepsi
+            </h3>
+            <span
+              class="font-display text-[8px] tracking-[.3em] uppercase text-ink/35 mb-7 block"
+              >Kediaman Mempelai Wanita</span
+            >
+            <div
+              class="font-sans text-ink/55 leading-[1.8]"
+              style="font-size: 0.8rem"
+            >
+              <strong class="text-ink font-normal">Minggu, 05 Juli 2026</strong
+              ><br />20 Muharam 1448 H<br /><span class="text-ink/30 text-xs"
+                >Waktu menyusul</span
+              >
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section
+        class="py-24 px-[5vw] bg-bg2 border-t border-b border-divider text-center"
+      >
+        <span
+          class="font-display text-[8px] tracking-[.35em] uppercase text-gold block mb-14"
+          >Menuju Hari Bahagia</span
+        >
+        <div class="flex justify-center gap-4 sm:gap-10 md:gap-20">
+          <div class="flex flex-col items-center">
+            <span
+              id="cd-days"
+              class="font-serif font-light text-ink text-4xl sm:text-5xl md:text-7xl leading-none"
+              >00</span
+            >
+            <div class="w-1 h-1 rounded-full bg-gold my-3"></div>
+            <span
+              class="font-display text-[7px] tracking-[.3em] uppercase text-ink/30"
+              >Hari</span
+            >
+          </div>
+          <div class="flex flex-col items-center">
+            <span
+              id="cd-hours"
+              class="font-serif font-light text-ink text-4xl sm:text-5xl md:text-7xl leading-none"
+              >00</span
+            >
+            <div class="w-1 h-1 rounded-full bg-gold my-3"></div>
+            <span
+              class="font-display text-[7px] tracking-[.3em] uppercase text-ink/30"
+              >Jam</span
+            >
+          </div>
+          <div class="flex flex-col items-center">
+            <span
+              id="cd-mins"
+              class="font-serif font-light text-ink text-4xl sm:text-5xl md:text-7xl leading-none"
+              >00</span
+            >
+            <div class="w-1 h-1 rounded-full bg-gold my-3"></div>
+            <span
+              class="font-display text-[7px] tracking-[.3em] uppercase text-ink/30"
+              >Menit</span
+            >
+          </div>
+          <div class="flex flex-col items-center">
+            <span
+              id="cd-secs"
+              class="font-serif font-light text-ink text-4xl sm:text-5xl md:text-7xl leading-none"
+              >00</span
+            >
+            <div class="w-1 h-1 rounded-full bg-gold my-3"></div>
+            <span
+              class="font-display text-[7px] tracking-[.3em] uppercase text-ink/30"
+              >Detik</span
+            >
+          </div>
+        </div>
+      </section>
+
+      <section class="py-28 md:py-36 px-[5vw]">
+        <div
+          class="grid grid-cols-1 lg:grid-cols-[1fr_1.6fr] gap-12 md:gap-20 items-center max-w-[1300px] mx-auto"
+        >
+          <div class="reveal">
+            <span
+              class="font-display text-[8px] tracking-[.3em] uppercase text-gold mb-5 block"
+              >Lokasi</span
+            >
+            <h2
+              class="font-serif font-light text-ink leading-snug mb-4"
+              style="font-size: clamp(1.8rem, 3.5vw, 2.5rem)"
+            >
+              Tempat Kami Mengikat Janji
+            </h2>
+            <p
+              class="font-sans text-ink/50 leading-[1.8] mb-9"
+              style="font-size: 0.85rem"
+            >
+              Kehadiran Anda adalah doa terbaik bagi kami. Gunakan peta untuk
+              memudahkan perjalanan ke lokasi acara.
+            </p>
+            <button
+              id="btn-maps"
+              class="inline-flex items-center gap-2.5 font-display text-[8px] tracking-[.3em] uppercase text-bg bg-gold hover:bg-gold-lt px-7 py-3.5 border-none cursor-pointer transition-colors duration-300"
+            >
+              <i data-lucide="map-pin" class="w-3 h-3"></i>Buka Google Maps
+            </button>
+          </div>
+          <div
+            class="reveal relative overflow-hidden rounded-sm h-[420px] md:h-[460px]"
+          >
+            <iframe
+              src="https://www.google.com/maps/embed?pb=!1m17!1m12!1m3!1d3952.5548525720014!2d106.8000466370351!3d-6.6985951452290315!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m2!1m1!2zNsKwNDEnNTQuOCJTIDEwNsKwNDgnMDAuMiJF!5e1!3m2!1sen!2sid!4v1781724132598!5m2!1sen!2sid"
+              class="w-full h-full border-0 transition-all duration-700 md:grayscale md:contrast-110 md:brightness-90 hover:md:grayscale-0 hover:md:contrast-100 hover:md:brightness-100"
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade"
+              allowfullscreen
+            ></iframe>
+            <div
+              class="absolute inset-0 border border-gold/15 pointer-events-none rounded-sm"
+            ></div>
+          </div>
+        </div>
+      </section>
+
+      <section
+        class="py-28 md:py-36 px-[5vw] bg-bg2 border-t border-divider text-center"
+      >
+        <h2
+          class="reveal font-serif font-light text-ink mb-3"
+          style="font-size: clamp(2rem, 4vw, 2.6rem)"
+        >
+          Hadiah & Kasih
+        </h2>
+        <p
+          class="reveal font-sans text-ink/45 max-w-md mx-auto mb-16 leading-[1.7]"
+          style="font-size: 0.82rem"
+        >
+          Doa dan kehadiran Anda sudah lebih dari cukup. Namun bila ingin
+          memberikan tanda kasih, kami menerima melalui rekening berikut.
+        </p>
+        <div
+          class="reveal flex flex-wrap justify-center gap-5 max-w-[820px] mx-auto"
+        >
+          <div
+            class="gift-card relative text-left bg-bg border border-divider hover:border-gold/35 transition-colors duration-400 p-10 overflow-hidden w-full max-w-[360px]"
+          >
+            <span
+              class="font-display text-[9px] tracking-[.25em] uppercase text-gold mb-5 block"
+              >SeaBank</span
+            >
+            <div
+              class="font-serif font-light text-ink text-[1.8rem] tracking-wide mb-1.5"
+            >
+              901 289 671 706
+            </div>
+            <div
+              class="font-sans text-[.72rem] tracking-[.1em] uppercase text-ink/35 mb-7"
+            >
+              Achmad Faisal
+            </div>
+            <button
+              class="copy-btn inline-flex items-center gap-2 font-display text-[8px] tracking-[.25em] uppercase text-gold hover:text-ink bg-none border-none cursor-pointer transition-colors duration-200 p-0"
+              onclick="handleCopy('901289671706', this)"
+            >
+              <i data-lucide="copy" class="w-3 h-3"></i><span>Salin Nomor</span>
+            </button>
+          </div>
+          <div
+            class="gift-card relative text-left bg-bg border border-divider hover:border-gold/35 transition-colors duration-400 p-10 overflow-hidden w-full max-w-[360px]"
+          >
+            <span
+              class="font-display text-[9px] tracking-[.25em] uppercase text-gold mb-5 block"
+              >BNI</span
+            >
+            <div
+              class="font-serif font-light text-ink text-[1.8rem] tracking-wide mb-1.5"
+            >
+              079 297 2790
+            </div>
+            <div
+              class="font-sans text-[.72rem] tracking-[.1em] uppercase text-ink/35 mb-7"
+            >
+              Dinda Parawansa
+            </div>
+            <button
+              class="copy-btn inline-flex items-center gap-2 font-display text-[8px] tracking-[.25em] uppercase text-gold hover:text-ink bg-none border-none cursor-pointer transition-colors duration-200 p-0"
+              onclick="handleCopy('0792972790', this)"
+            >
+              <i data-lucide="copy" class="w-3 h-3"></i><span>Salin Nomor</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="py-28 md:py-36 px-[5vw]">
+        <div class="max-w-[720px] mx-auto">
+          <h2
+            class="reveal font-serif font-light text-ink text-center mb-14"
+            style="font-size: clamp(2rem, 4vw, 2.6rem)"
+          >
+            Doa & Ucapan
+          </h2>
+          <form class="reveal mb-16" onsubmit="submitWish(event)">
+            <div class="mb-7">
+              <input
+                id="wish-name"
+                type="text"
+                placeholder="Nama Anda"
+                required
+                class="w-full bg-transparent border-0 border-b border-ink/12 py-3 pb-3.5 font-sans text-[.85rem] text-ink placeholder:text-ink/20 focus:outline-none transition-colors duration-300"
+                style="border-bottom: 1px solid rgba(232, 224, 208, 0.12)"
+                onfocus="this.style.borderBottomColor = '#B8935A'"
+                onblur="this.style.borderBottomColor = 'rgba(232,224,208,.12)'"
+              />
+            </div>
+            <div class="mb-8">
+              <textarea
+                id="wish-msg"
+                placeholder="Tuliskan doa dan ucapan..."
+                rows="4"
+                required
+                class="w-full bg-transparent border-0 border-b border-ink/12 py-3 pb-3.5 font-sans text-[.85rem] text-ink resize-none placeholder:text-ink/20 focus:outline-none transition-colors duration-300"
+                style="border-bottom: 1px solid rgba(232, 224, 208, 0.12)"
+                onfocus="this.style.borderBottomColor = '#B8935A'"
+                onblur="this.style.borderBottomColor = 'rgba(232,224,208,.12)'"
+              ></textarea>
+            </div>
+            <div class="flex justify-end">
+              <button
+                type="submit"
+                id="wish-btn"
+                class="inline-flex items-center gap-2.5 font-display text-[8px] tracking-[.3em] uppercase text-bg bg-gold hover:bg-gold-lt px-7 py-3.5 border-none cursor-pointer transition-colors duration-300 disabled:opacity-50"
+              >
+                <i data-lucide="send" class="w-2.5 h-2.5"></i>Kirim Ucapan
+              </button>
+            </div>
+          </form>
+          <div class="reveal flex flex-col gap-4" id="wishes-list"></div>
+        </div>
+      </section>
+
+      <footer class="py-16 px-[5vw] bg-bg2 border-t border-divider text-center">
+        <span
+          class="font-display text-[8px] tracking-[.3em] uppercase text-gold/70 mb-5 block"
+          >The Wedding Of</span
+        >
+        <div
+          class="font-serif font-light text-ink mb-6"
+          style="font-size: clamp(1.5rem, 4vw, 2.2rem)"
+        >
+          Dinda<span class="font-serif italic text-gold px-1">&</span>Faisal
+        </div>
+        <div
+          class="flex flex-col sm:flex-row justify-center items-center gap-3 sm:gap-10 font-sans text-[.7rem] text-ink/35 leading-relaxed mb-8"
+        >
+          <span>Putri dari Bpk. & Ibu Parawansa</span>
+          <span class="hidden sm:inline text-gold/40">•</span>
+          <span>Putra dari Bpk. & Ibu Faisal</span>
+        </div>
+        <p
+          class="font-sans text-[.68rem] tracking-[.15em] uppercase text-ink/20"
+        >
+          © 2026 · Semoga Allah meridhoi perjalanan kami
+        </p>
+      </footer>
+    </div>
+
+    <script
+      defer
+      src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"
+    ></script>
+    <script
+      defer
+      src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"
+    ></script>
+    <script
+      defer
+      src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/TextPlugin.min.js"
+    ></script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"
+    ></script>
+
+    <script>
+      // ══════════════════════════════════════════════════════
+      //  CONFIG
+      // ══════════════════════════════════════════════════════
+      const SUPABASE_URL = "https://czirygovdetzkdqjxedj.supabase.co";
+      const SUPABASE_KEY = "sb_publishable_pEMi7il-nXmenazfyO0jog_uL25n77f";
+
+      // ══════════════════════════════════════════════════════
+      //  PRELOAD HERO
+      // ══════════════════════════════════════════════════════
+      (function preloadHero() {
+        const FIRST_SRC =
+          "/Foto/Foto-Request-Client/preview/AhaConvert_GNT08054-1.webp";
+        const bar = document.getElementById("env-load-bar");
+        const barWrap = document.getElementById("env-load-bar-wrap");
+        const label = document.getElementById("env-load-label");
+        const btn = document.getElementById("env-open-btn");
+        const hint = document.getElementById("env-hint");
+        const TIMEOUT = 4000;
+
+        let done = false;
+
+        function setProgress(p) {
+          if (bar) bar.style.width = p + "%";
+        }
+
+        function unlock() {
+          if (done) return;
+          done = true;
+          setProgress(100);
+          setTimeout(() => {
+            if (barWrap) barWrap.style.opacity = "0";
+            if (label) label.classList.remove("is-visible");
+            if (btn) {
+              btn.disabled = false;
+              btn.style.cursor = "pointer";
+            }
+            if (hint) {
+              hint.style.opacity = "1";
+              hint.style.transition = "opacity .5s";
+            }
+          }, 300);
+        }
+
+        if (barWrap) barWrap.classList.add("is-loading");
+        if (label) label.classList.add("is-visible");
+
+        let fakePct = 0;
+        const fakeInterval = setInterval(() => {
+          fakePct = Math.min(fakePct + 4, 60);
+          setProgress(fakePct);
+          if (fakePct >= 60) clearInterval(fakeInterval);
+        }, 80);
+
+        const img = new Image();
+
+        const supportsFetch =
+          typeof fetch !== "undefined" && typeof ReadableStream !== "undefined";
+
+        if (supportsFetch) {
+          fetch(FIRST_SRC)
+            .then((res) => {
+              const total = parseInt(
+                res.headers.get("content-length") || "0",
+                10,
+              );
+              const reader = res.body.getReader();
+              let received = 0;
+              function read() {
+                return reader.read().then(({ done: d, value }) => {
+                  if (d) {
+                    unlock();
+                    return;
+                  }
+                  received += value.byteLength;
+                  if (total > 0) {
+                    const pct = Math.round((received / total) * 100);
+                    setProgress(Math.max(pct, fakePct));
+                  }
+                  return read();
+                });
+              }
+              return read();
+            })
+            .catch(unlock);
+        } else {
+          img.onload = unlock;
+          img.onerror = unlock;
+          img.src = FIRST_SRC;
+        }
+        setTimeout(unlock, TIMEOUT);
+      })();
+
+      // ══════════════════════════════════════════════════════
+      //  HELPERS
+      // ══════════════════════════════════════════════════════
+      function ci() {
+        if (window.lucide && typeof window.lucide.createIcons === "function")
+          window.lucide.createIcons();
+      }
+      function escHtml(s) {
+        return String(s)
+          .replace(/&/g, "&")
+          .replace(/</g, "<")
+          .replace(/>/g, ">");
+      }
+      function splitWords(el) {
+        if (!el || el.dataset.split) return;
+        el.dataset.split = "1";
+        el.innerHTML = el.textContent
+          .split(/(\s+)/)
+          .map((part) =>
+            part.trim() === ""
+              ? part
+              : `<span class="split-word" style="opacity:0;transform:translateY(10px)">${escHtml(part)}</span>`,
+          )
+          .join("");
+      }
+
+      // ══════════════════════════════════════════════════════
+      //  SUPABASE + WISHES
+      // ══════════════════════════════════════════════════════
+      let sb = null;
+      function initSupabase() {
+        if (window.supabase && SUPABASE_KEY.startsWith("sb_publishable_"))
+          sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      }
+      let comments = [
+        {
+          id: 1,
+          name: "Sahabat Lama",
+          message:
+            "Selamat menempuh hidup baru. Semoga langgeng, penuh berkah, dan selalu bahagia — Dinda & Faisal.",
+          created_at: new Date().toISOString(),
+        },
+      ];
+      function renderWishes() {
+        const el = document.getElementById("wishes-list");
+        if (!el) return;
+        el.innerHTML = comments
+          .map(
+            (c) => `
+        <div class="wish-item relative bg-bg2 border border-divider p-7 pl-8">
+          <div class="flex justify-between items-start mb-3 pl-8">
+            <span class="font-display text-[9px] tracking-[.2em] uppercase text-gold">${escHtml(c.name)}</span>
+            <span class="font-sans text-[.68rem] text-ink/25">${new Date(c.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}</span>
+          </div>
+          <p class="font-serif italic text-ink/65 leading-[1.65] text-[1rem] pl-8">${escHtml(c.message)}</p>
+        </div>`,
+          )
+          .join("");
+      }
+      async function fetchWishes() {
+        if (!sb) return;
+        const { data, error } = await sb
+          .from("comments")
+          .select("*")
+          .order("created_at", { ascending: false });
+        if (!error && data) {
+          comments = data;
+          renderWishes();
+        }
+      }
+      async function submitWish(e) {
+        e.preventDefault();
+        const name = document.getElementById("wish-name").value.trim();
+        const message = document.getElementById("wish-msg").value.trim();
+        if (!name || !message) return;
+        const btn = document.getElementById("wish-btn");
+        btn.disabled = true;
+        btn.textContent = "Mengirim…";
+        if (sb) {
+          await sb.from("comments").insert([{ name, message }]);
+          await fetchWishes();
+        } else {
+          comments = [
+            {
+              id: Date.now(),
+              name,
+              message,
+              created_at: new Date().toISOString(),
+            },
+            ...comments,
+          ];
+          renderWishes();
+        }
+        document.getElementById("wish-name").value = "";
+        document.getElementById("wish-msg").value = "";
+        btn.disabled = false;
+        btn.innerHTML =
+          '<i data-lucide="send" class="w-2.5 h-2.5"></i> Kirim Ucapan';
+        setTimeout(ci, 0);
+      }
+      function handleCopy(text, btn) {
+        navigator.clipboard.writeText(text).catch(() => {});
+        const icon = btn.querySelector("i");
+        const label = btn.querySelector("span");
+        if (icon) {
+          icon.setAttribute("data-lucide", "check");
+          ci();
+        }
+        if (label) label.textContent = "Tersalin!";
+        setTimeout(() => {
+          if (icon) {
+            icon.setAttribute("data-lucide", "copy");
+            ci();
+          }
+          if (label) label.textContent = "Salin Nomor";
+        }, 2000);
+      }
+
+      // ══════════════════════════════════════════════════════
+      //  COUNTDOWN
+      // ══════════════════════════════════════════════════════
+      function startCountdown() {
+        const target = new Date("2026-07-05T08:00:00+07:00").getTime();
+        function tick() {
+          const d = target - Date.now();
+          if (d <= 0) return;
+          document.getElementById("cd-days").textContent = String(
+            Math.floor(d / 86400000),
+          ).padStart(2, "0");
+          document.getElementById("cd-hours").textContent = String(
+            Math.floor((d % 86400000) / 3600000),
+          ).padStart(2, "0");
+          document.getElementById("cd-mins").textContent = String(
+            Math.floor((d % 3600000) / 60000),
+          ).padStart(2, "0");
+          document.getElementById("cd-secs").textContent = String(
+            Math.floor((d % 60000) / 1000),
+          ).padStart(2, "0");
+        }
+        tick();
+        setInterval(tick, 1000);
+      }
+
+      // ══════════════════════════════════════════════════════
+      //  CURSOR
+      // ══════════════════════════════════════════════════════
+      function initCursor() {
+        if (!matchMedia("(hover:hover) and (pointer:fine)").matches) return;
+        const dot = document.getElementById("c-dot");
+        const ring = document.getElementById("c-ring");
+        let mx = innerWidth / 2,
+          my = innerHeight / 2,
+          rx = mx,
+          ry = my;
+        addEventListener("mousemove", (e) => {
+          mx = e.clientX;
+          my = e.clientY;
+          gsap.to(dot, { x: mx, y: my, duration: 0.08, ease: "power2.out" });
+        });
+        (function loop() {
+          rx += (mx - rx) * 0.12;
+          ry += (my - ry) * 0.12;
+          gsap.set(ring, { x: rx, y: ry });
+          requestAnimationFrame(loop);
+        })();
+        document.querySelectorAll("a,button,input,textarea").forEach((el) => {
+          el.addEventListener("mouseenter", () => {
+            ring.style.width = "44px";
+            ring.style.height = "44px";
+            ring.style.borderColor = "#B8935A";
+            ring.style.background = "rgba(184,147,90,.08)";
+            dot.style.transform = "translate(-50%,-50%) scale(0)";
+          });
+          el.addEventListener("mouseleave", () => {
+            ring.style.width = "32px";
+            ring.style.height = "32px";
+            ring.style.borderColor = "rgba(232,224,208,.35)";
+            ring.style.background = "transparent";
+            dot.style.transform = "translate(-50%,-50%) scale(1)";
+          });
+        });
+      }
+
+      // ══════════════════════════════════════════════════════
+      //  MUSIC
+      // ══════════════════════════════════════════════════════
+      function initMusic() {
+        const audio = document.getElementById("bg-music");
+        const btn = document.getElementById("music-toggle");
+        const icon = document.getElementById("music-icon");
+        if (!audio || !btn) return;
+        function setIcon(p) {
+          if (icon) {
+            icon.setAttribute("data-lucide", p ? "pause" : "disc-3");
+            icon.classList.toggle("spinning", p);
+            ci();
+          }
+          btn.setAttribute("aria-label", p ? "Jeda musik" : "Putar musik");
+        }
+        btn.addEventListener("click", () => {
+          audio.paused ? audio.play().catch(() => {}) : audio.pause();
+        });
+        audio.addEventListener("play", () => setIcon(true));
+        audio.addEventListener("pause", () => setIcon(false));
+        window.__tryPlayMusic = () => audio.play().catch(() => {});
+      }
+
+      // ══════════════════════════════════════════════════════
+      //  ENVELOPE OPEN
+      // ══════════════════════════════════════════════════════
+      function openInvitation() {
+        const env = document.getElementById("envelope-screen");
+        const card = document.getElementById("env-card");
+        const btn = document.getElementById("env-open-btn");
+        const main = document.getElementById("main-content");
+        if (btn) btn.disabled = true;
+
+        gsap
+          .timeline()
+          .to(card, { scale: 1.03, duration: 0.2, ease: "power2.out" })
+          .to(card, {
+            rotateX: -12,
+            y: -18,
+            duration: 0.45,
+            ease: "power3.inOut",
+          })
+          .to(env, { yPercent: -100, duration: 0.95, ease: "expo.inOut" })
+          .call(
+            () => {
+              main.classList.remove("invisible", "opacity-0");
+              env.style.pointerEvents = "none";
+              if (window.__tryPlayMusic) window.__tryPlayMusic();
+            },
+            null,
+            "-=0.1",
+          )
+          .call(runSiteIntro, null, "-=0.55");
+      }
+
+      // ══════════════════════════════════════════════════════
+      //  SITE INTRO
+      // ══════════════════════════════════════════════════════
+      function runSiteIntro() {
+        gsap.registerPlugin(ScrollTrigger, TextPlugin);
+        const rm = matchMedia("(prefers-reduced-motion:reduce)").matches;
+
+        if (rm) {
+          gsap.set(".nav-word,.hero-stagger,.hero-scroll-hint,.reveal", {
+            opacity: 1,
+            y: 0,
+          });
+          document
+            .querySelectorAll(".story-line-item")
+            .forEach((el) => el.classList.add("is-active"));
+          document
+            .querySelectorAll(".story-bg-photo")
+            .forEach((p, i) => (p.style.opacity = i === 0 ? "1" : "0"));
+          return;
+        }
+
+        gsap.fromTo(
+          ".nav-word",
+          { y: -14, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 1.1,
+            stagger: 0.12,
+            ease: "power4.out",
+            delay: 0.15,
+          },
+        );
+        gsap.fromTo(
+          ".hero-stagger",
+          { y: 24, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 1,
+            stagger: 0.13,
+            ease: "power3.out",
+            delay: 0.35,
+          },
+        );
+        gsap.fromTo(
+          ".hero-scroll-hint",
+          { opacity: 0, y: 8 },
+          { opacity: 1, y: 0, duration: 1, ease: "power3.out", delay: 1.2 },
+        );
+
+        initKenBurns();
+
+        document.querySelectorAll(".reveal").forEach((el) => {
+          gsap.fromTo(
+            el,
+            { y: 36, opacity: 0 },
+            {
+              y: 0,
+              opacity: 1,
+              duration: 1.1,
+              ease: "power4.out",
+              scrollTrigger: { trigger: el, start: "top 88%" },
+            },
+          );
+        });
+
+        initStorySection();
+
+        if (document.fonts && document.fonts.ready)
+          document.fonts.ready.then(() => ScrollTrigger.refresh());
+      }
+
+      // ══════════════════════════════════════════════════════
+      //  KEN BURNS
+      // ══════════════════════════════════════════════════════
+      function initKenBurns() {
+        const slides = Array.from(document.querySelectorAll(".hero-slide"));
+        if (!slides.length) return;
+
+        const phrases = [
+          "Awalnya cuma kenalan…",
+          "Dari canggung, jadi nyaman.",
+          "Dari nyaman, jadi rumah.",
+          "Satu pesan, seribu cerita.",
+          "Dua hati, satu tujuan.",
+          "Menuju keabadian bersama.",
+        ];
+        const tagline = document.getElementById("hero-tagline");
+        const SLIDE = 4.5,
+          CROSS = 1.2;
+        let cur = 0;
+
+        slides.forEach((s, i) => {
+          gsap.set(s, { opacity: i === 0 ? 1 : 0, zIndex: i === 0 ? 1 : 0 });
+          const img = s.querySelector("img");
+          if (img) gsap.set(img, { scale: 1 });
+        });
+
+        const fi = slides[0].querySelector("img");
+        if (fi)
+          gsap.to(fi, { scale: 1.07, duration: SLIDE + CROSS, ease: "none" });
+
+        function next() {
+          const c = slides[cur],
+            ni = (cur + 1) % slides.length,
+            nx = slides[ni];
+          const ci2 = c.querySelector("img"),
+            ni2 = nx.querySelector("img");
+          if (ni2) {
+            gsap.set(ni2, { scale: 1 });
+            gsap.to(ni2, {
+              scale: 1.07,
+              duration: SLIDE + CROSS,
+              ease: "none",
+            });
+          }
+          gsap.set(nx, { zIndex: 2 });
+          gsap.to(nx, { opacity: 1, duration: CROSS, ease: "power2.inOut" });
+          gsap.to(c, {
+            opacity: 0,
+            duration: CROSS,
+            ease: "power2.inOut",
+            onComplete: () => {
+              gsap.set(c, { zIndex: 0 });
+              if (ci2) gsap.set(ci2, { scale: 1 });
+            },
+          });
+          if (tagline) {
+            gsap.to(tagline, {
+              opacity: 0,
+              y: -5,
+              duration: 0.3,
+              ease: "power2.in",
+              onComplete: () => {
+                tagline.textContent = phrases[ni % phrases.length];
+                gsap.to(tagline, {
+                  opacity: 1,
+                  y: 0,
+                  duration: 0.5,
+                  ease: "power2.out",
+                });
+              },
+            });
+          }
+          cur = ni;
+        }
+        setTimeout(() => {
+          next();
+          setInterval(next, SLIDE * 1000);
+        }, SLIDE * 1000);
+      }
+
+      // ══════════════════════════════════════════════════════
+      //  STORY SECTION — BEHAVIOR PARALLAX + CARD SPREAD
+      // ══════════════════════════════════════════════════════
+      function initStorySection() {
+        // Animasi Teks Muncul Per Baris (Reveal)
+        gsap.utils.toArray(".story-text-line").forEach((line) => {
+          gsap.fromTo(
+            line,
+            { y: 40, opacity: 0 },
+            {
+              y: 0,
+              opacity: 1,
+              duration: 1.2,
+              ease: "power3.out",
+              scrollTrigger: {
+                trigger: line,
+                start: "top 85%",
+              },
+            },
+          );
+        });
+
+        // Animasi Card (Gambar) Parallax & Reveal 1 per 1
+        gsap.utils.toArray(".story-card").forEach((card, index) => {
+          // Fade in dan naik sedikit ketika masuk layar
+          gsap.fromTo(
+            card,
+            { y: 120, opacity: 0 },
+            {
+              y: 0,
+              opacity: 1,
+              duration: 1.5,
+              ease: "power3.out",
+              scrollTrigger: {
+                trigger: card,
+                start: "top 95%",
+              },
+            },
+          );
+          // Gerak lambat Parallax seiring scroll ke bawah
+          gsap.to(card, {
+            yPercent: -40 + index * 8,
+            ease: "none",
+            scrollTrigger: {
+              trigger: "#kisah-kami",
+              start: "top bottom",
+              end: "bottom top",
+              scrub: true,
+            },
+          });
+        });
+      }
+
+      // ══════════════════════════════════════════════════════
+      //  LAZY WISHES
+      // ══════════════════════════════════════════════════════
+      function initLazyWishes() {
+        const list = document.getElementById("wishes-list");
+        if (!list) return;
+        const section = list.closest("section") || list;
+        if (!("IntersectionObserver" in window)) {
+          fetchWishes();
+          return;
+        }
+        const obs = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((e) => {
+              if (e.isIntersecting) {
+                fetchWishes();
+                obs.disconnect();
+              }
+            });
+          },
+          { rootMargin: "300px 0px" },
+        );
+        obs.observe(section);
+      }
+
+      // ══════════════════════════════════════════════════════
+      //  BOOT
+      // ══════════════════════════════════════════════════════
+      window.addEventListener("load", () => {
+        ci();
+        initSupabase();
+        renderWishes();
+        startCountdown();
+        initCursor();
+        initMusic();
+        initLazyWishes();
+
+        document.getElementById("btn-maps").addEventListener("click", () => {
+          window.open(
+            "https://maps.app.goo.gl/XRZZPUU8x4NcUPLX6?g_st=aw",
+            "_blank",
+          );
+        });
+        const navTop = document.getElementById("nav-to-top");
+        const navEv = document.getElementById("nav-to-events");
+        if (navTop)
+          navTop.addEventListener("click", () =>
+            window.scrollTo({ top: 0, behavior: "smooth" }),
+          );
+        if (navEv)
+          navEv.addEventListener("click", () =>
+            document
+              .getElementById("acara")
+              .scrollIntoView({ behavior: "smooth", block: "start" }),
+          );
+      });
+    </script>
+  </body>
+</html>
