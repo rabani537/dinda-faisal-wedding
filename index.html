@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dinda & Faisal — 05 Juli 2026</title>
+    <title>Dinda & Ashel — 05 Juli 2026</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -41,7 +41,10 @@
     ></script>
 
     <style>
-      /* ── BASE ─────────────────────────────────────────────── */
+      /* Only things Tailwind can't do */
+      /* Cursor custom hanya disembunyikan kalau device benar2 punya mouse halus
+         (pointer:fine). Di HP/tablet (touch), cursor bawaan dibiarkan normal —
+         tidak ada efek yang perlu disembunyikan di sana. */
       @media (hover: hover) and (pointer: fine) {
         body {
           cursor: none;
@@ -62,18 +65,18 @@
         border-radius: 2px;
       }
 
-      /* ── GRAIN ────────────────────────────────────────────── */
+      /* grain */
       .grain {
         position: fixed;
         inset: 0;
         z-index: 9998;
         pointer-events: none;
-        opacity: 0.03;
+        opacity: 0.035;
         mix-blend-mode: overlay;
         background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
       }
 
-      /* ── CURSOR ───────────────────────────────────────────── */
+      /* cursor */
       #c-dot {
         position: fixed;
         top: 0;
@@ -86,7 +89,7 @@
         z-index: 10000;
         transform: translate(-50%, -50%);
         mix-blend-mode: difference;
-        will-change: transform;
+        transition: transform 0.15s;
       }
       #c-ring {
         position: fixed;
@@ -104,98 +107,22 @@
           height 0.25s,
           border-color 0.25s,
           background 0.25s;
-        will-change: transform;
       }
 
-      /* ── ENVELOPE ─────────────────────────────────────────── */
-      #envelope-screen {
-        position: fixed;
-        inset: 0;
-        z-index: 5000;
-        background: #16130f;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        overflow: hidden;
-      }
-
-      /* ── ENV LOADING BAR ──────────────────────────────────── */
-      #env-load-bar-wrap {
-        width: 100%;
-        height: 1px;
-        background: rgba(232, 224, 208, 0.08);
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        overflow: hidden;
-        opacity: 0;
-        transition: opacity 0.4s;
-      }
-      #env-load-bar-wrap.is-loading {
-        opacity: 1;
-      }
-      #env-load-bar {
-        height: 100%;
-        width: 0%;
-        background: #b8935a;
-        transition: width 0.3s ease-out;
-      }
-      .env-open-btn:disabled {
-        opacity: 0.4;
-        cursor: not-allowed;
-        pointer-events: none;
-      }
-      #env-load-label {
-        font-family: "Cinzel", serif;
-        font-size: 8px;
-        letter-spacing: 0.25em;
-        text-transform: uppercase;
-        color: rgba(232, 224, 208, 0.35);
-        margin-top: 12px;
-        height: 16px;
-        opacity: 0;
-        transition: opacity 0.3s;
-      }
-      #env-load-label.is-visible {
-        opacity: 1;
-      }
-
-      /* ── HERO SLIDES ──────────────────────────────────────── */
+      /* hero photo slides */
       .hero-slide {
         position: absolute;
         inset: 0;
+        background-size: cover;
+        background-position: center top;
         opacity: 0;
-        will-change: opacity, transform;
-        backface-visibility: hidden;
+        will-change: transform, opacity;
       }
       .hero-slide:first-child {
         opacity: 1;
       }
-      .hero-slide img {
-        position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        object-position: center bottom;
-        will-change: transform;
-        backface-visibility: hidden;
-        transform-origin: center center;
-      }
 
-      /* ── REVEAL ───────────────────────────────────────────── */
-      .reveal {
-        opacity: 0;
-        transform: translateY(36px);
-        will-change: transform, opacity;
-      }
-      .split-word {
-        display: inline-block;
-        will-change: transform, opacity;
-      }
-
-      /* ── SCROLL HINT ──────────────────────────────────────── */
+      /* scroll hint line animation */
       @keyframes scrollPulse {
         0%,
         100% {
@@ -209,25 +136,17 @@
         animation: scrollPulse 2s ease-in-out infinite;
       }
 
-      /* ── GIFT CARD ────────────────────────────────────────── */
-      .gift-card::before {
-        content: "";
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 2px;
-        height: 100%;
-        background: #b8935a;
-        transform: scaleY(0);
-        transform-origin: top;
-        transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-        will-change: transform;
+      /* bank card: sedikit terangkat saat hover, seperti kartu fisik diangkat */
+      .bank-card {
+        transition:
+          transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+          box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
       }
-      .gift-card:hover::before {
-        transform: scaleY(1);
+      .bank-card:hover {
+        transform: translateY(-4px);
       }
 
-      /* ── WISH CARD ────────────────────────────────────────── */
+      /* wish item opening quote */
       .wish-item::before {
         content: "\201C";
         font-family: "Cormorant Garamond", serif;
@@ -241,7 +160,19 @@
         user-select: none;
       }
 
-      /* ── MUSIC ────────────────────────────────────────────── */
+      /* reveal base state */
+      .reveal {
+        opacity: 0;
+        transform: translateY(36px);
+        will-change: transform, opacity;
+      }
+
+      /* split-text words (used by splitWords() helper in JS) */
+      .split-word {
+        will-change: transform, opacity;
+      }
+
+      /* music toggle button */
       #music-toggle {
         -webkit-tap-highlight-color: transparent;
       }
@@ -257,7 +188,64 @@
         animation: discSpin 6s linear infinite;
       }
 
-      /* ── REDUCED MOTION ───────────────────────────────────── */
+      /* ── PRELOADER ──────────────────────────────────────── */
+      #preloader {
+        position: fixed;
+        inset: 0;
+        z-index: 6000;
+        background: #16130f;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        transition:
+          opacity 0.6s ease,
+          visibility 0.6s ease;
+      }
+      #preloader.is-hidden {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+      }
+      .preloader-frame {
+        position: relative;
+        width: 96px;
+        height: 124px;
+        overflow: hidden;
+        background: #1c1810;
+        border: 1px solid rgba(184, 147, 90, 0.25);
+        transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .preloader-frame.is-wide {
+        width: 220px;
+      }
+      .preloader-frame img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        filter: grayscale(1) contrast(1.05);
+        opacity: 0;
+        transition: opacity 0.5s ease;
+      }
+      .preloader-frame img.is-loaded {
+        opacity: 1;
+      }
+      #preloader-pct {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: "Cinzel", serif;
+        font-size: 11px;
+        letter-spacing: 0.15em;
+        color: #e8e0d0;
+        background: rgba(22, 19, 15, 0.35);
+      }
+
+      /* Hormati preferensi reduce-motion: animasi besar dipangkas jadi instan/cepat */
       @media (prefers-reduced-motion: reduce) {
         .scroll-line {
           animation: none;
@@ -266,6 +254,24 @@
           animation: none;
         }
       }
+
+      /* ── STORY CARD SCROLL-REVEAL ──────────────────────────
+         State awal foto-foto background di "Kisah Kami": tersembunyi
+         (opacity 0 + sedikit turun ke bawah). JS (initStoryCards)
+         akan mengangkat tiap foto satu-satu, berurutan dari atas ke
+         bawah, begitu section ini mulai masuk viewport saat discroll.
+         opacity dasar foto (.15) tetap dijaga lewat custom property,
+         supaya nilai akhir reveal konsisten dengan desain asli.
+      ───────────────────────────────────────────────────────── */
+      .story-card {
+        opacity: 0;
+        transform: translateY(48px);
+        will-change: transform, opacity;
+      }
+      .story-card.is-visible {
+        opacity: 0.6; /* sama seperti opacity-60 di markup asli */
+        transform: translateY(0);
+      }
     </style>
   </head>
   <body class="bg-bg text-ink font-sans overflow-x-hidden">
@@ -273,7 +279,29 @@
     <div id="c-dot"></div>
     <div id="c-ring"></div>
 
-    <div id="envelope-screen">
+    <!-- ═══════════════════════════════════════════════════
+     PRELOADER — ringan: foto kecil + persentase, hilang begitu
+     foto utama selesai dimuat (atau maksimal 3.5s biar ga ngegantung)
+═══════════════════════════════════════════════════ -->
+    <div id="preloader">
+      <div class="preloader-frame" id="preloader-frame">
+        <img id="preloader-img" src="" alt="" />
+        <div id="preloader-pct">0%</div>
+      </div>
+      <span
+        class="font-display text-[8px] tracking-[.3em] uppercase text-ink/30 mt-6"
+        >Memuat undangan</span
+      >
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════
+     ENVELOPE SCREEN
+═══════════════════════════════════════════════════ -->
+    <div
+      id="envelope-screen"
+      class="fixed inset-0 z-[5000] bg-bg flex flex-col items-center justify-center overflow-hidden"
+    >
+      <!-- vignette -->
       <div
         class="absolute inset-0 pointer-events-none"
         style="
@@ -284,6 +312,8 @@
           );
         "
       ></div>
+
+      <!-- diagonal grid texture -->
       <div
         class="absolute inset-0 pointer-events-none opacity-[0.04]"
         style="
@@ -298,11 +328,13 @@
         "
       ></div>
 
+      <!-- Card -->
       <div
         id="env-card"
-        class="relative w-[min(440px,90vw)] bg-[#1F1B14] border border-gold/30 px-10 md:px-12 py-14 text-center overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,.6)] group"
-        style="cursor: default"
+        onclick="openInvitation()"
+        class="relative w-[min(440px,90vw)] bg-[#1F1B14] border border-gold/30 px-10 md:px-12 py-14 text-center cursor-pointer overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,.6)] group"
       >
+        <!-- envelope SVG flap illusion -->
         <div class="absolute inset-0 pointer-events-none">
           <svg
             class="absolute top-0 left-0 w-full h-[38%]"
@@ -329,6 +361,8 @@
             />
           </svg>
         </div>
+
+        <!-- corner ornaments -->
         <div
           class="absolute top-4 left-4 w-9 h-9 border-t border-l border-gold/40"
         ></div>
@@ -343,6 +377,7 @@
         ></div>
 
         <div class="relative z-10 flex flex-col items-center">
+          <!-- wax seal -->
           <div
             class="w-[60px] h-[60px] rounded-full flex items-center justify-center mb-8 font-display text-lg text-white/60 shrink-0 group-hover:scale-105 transition-transform duration-500 shadow-[0_4px_24px_rgba(139,26,26,.4),inset_0_1px_0_rgba(255,255,255,.15)]"
             style="
@@ -350,8 +385,9 @@
               border: 2px solid rgba(139, 26, 26, 0.4);
             "
           >
-            DF
+            DA
           </div>
+
           <span
             class="font-display text-[9px] tracking-[.35em] uppercase text-gold/90 mb-1"
             >Wedding Invitation</span
@@ -360,67 +396,107 @@
             class="font-sans text-[9px] tracking-[.2em] uppercase text-ink/40 mb-5"
             >The Wedding Of</span
           >
+
           <h1
             class="font-serif text-[clamp(2.8rem,10vw,4rem)] font-light leading-[1.05] text-ink mb-2"
           >
             Dinda
             <em class="block my-1 text-[.55em] text-gold-lt font-serif italic"
-              >&</em
+              >&amp;</em
             >
-            Faisal
+            Ashel
           </h1>
+
+          <!-- rule with diamond -->
           <div class="flex items-center gap-3 w-full my-5 opacity-60">
             <span class="flex-1 h-px bg-ink/20"></span>
             <i data-lucide="diamond" class="w-2.5 h-2.5 text-gold"></i>
             <span class="flex-1 h-px bg-ink/20"></span>
           </div>
+
           <p
             class="font-sans text-[9px] tracking-[.25em] uppercase text-ink/45 mb-8"
           >
-            Minggu, 05 Juli 2026 · Bogor
+            Minggu, 05 Juli 2026 &nbsp;·&nbsp; Bogor
           </p>
 
+          <!-- Kepada Yth — diisi JS dari query param ?k=, default tersembunyi -->
+          <div id="env-guest-block" class="mb-8 hidden">
+            <span
+              class="font-sans text-[9px] tracking-[.2em] uppercase text-ink/40 block mb-2"
+              >Kepada Bapak/Ibu/Saudara/i</span
+            >
+            <span
+              id="env-guest-name"
+              class="font-serif italic text-gold-lt block"
+              style="font-size: clamp(1.1rem, 2.5vw, 1.4rem)"
+            ></span>
+          </div>
+
           <button
-            id="env-open-btn"
             class="env-open-btn inline-flex items-center gap-2 font-display text-[9px] tracking-[.3em] uppercase text-bg bg-gold hover:bg-gold-lt border-none outline-none px-8 py-3.5 cursor-pointer transition-colors duration-300"
             type="button"
-            disabled
-            onclick="openInvitation()"
           >
             <i data-lucide="mail-open" class="w-3 h-3"></i>
-            <span id="env-btn-label">Buka Undangan</span>
+            Buka Undangan
           </button>
-
-          <div id="env-load-label">Memuat foto…</div>
-        </div>
-        <div id="env-load-bar-wrap">
-          <div id="env-load-bar"></div>
         </div>
       </div>
+
       <p
-        id="env-hint"
-        class="mt-8 font-sans text-[10px] tracking-[.2em] uppercase text-ink/30 opacity-0"
+        class="mt-8 font-sans text-[10px] tracking-[.2em] uppercase text-ink/30 animate-pulse"
       >
         Tekan untuk membuka
       </p>
     </div>
 
+    <!-- ═══════════════════════════════════════════════════
+     MAIN CONTENT
+═══════════════════════════════════════════════════ -->
     <div id="main-content" class="invisible opacity-0">
+      <!-- MUSIC -->
       <audio
         id="bg-music"
         src="/Lagu/Perfection.mp3"
         loop
-        preload="none"
+        preload="auto"
       ></audio>
-      <button
-        id="music-toggle"
-        type="button"
-        aria-label="Putar musik"
-        class="fixed bottom-6 right-6 z-[4000] w-12 h-12 rounded-full border border-gold/40 bg-bg2/70 backdrop-blur-sm flex items-center justify-center text-gold hover:border-gold hover:text-gold-lt transition-colors duration-300"
+      <div
+        id="music-panel"
+        class="fixed bottom-6 right-6 z-[4000] flex items-center gap-3"
       >
-        <i data-lucide="disc-3" id="music-icon" class="w-5 h-5"></i>
-      </button>
+        <!-- slider volume — tersembunyi, muncul ke kiri tombol saat dibuka -->
+        <div
+          id="volume-pop"
+          class="flex items-center gap-2 bg-bg2/80 backdrop-blur-sm border border-gold/30 rounded-full px-4 py-2.5 opacity-0 scale-95 pointer-events-none transition-all duration-200 origin-right"
+        >
+          <i
+            data-lucide="volume-1"
+            class="w-3.5 h-3.5 text-gold/70 shrink-0"
+          ></i>
+          <input
+            id="volume-range"
+            type="range"
+            min="0"
+            max="100"
+            value="60"
+            aria-label="Atur volume musik"
+            class="w-20 sm:w-24 accent-gold cursor-pointer"
+          />
+        </div>
 
+        <button
+          id="music-toggle"
+          type="button"
+          aria-label="Putar musik"
+          aria-expanded="false"
+          class="w-12 h-12 rounded-full border border-gold/40 bg-bg2/70 backdrop-blur-sm flex items-center justify-center text-gold hover:border-gold hover:text-gold-lt transition-colors duration-300 shrink-0"
+        >
+          <i data-lucide="disc-3" id="music-icon" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- NAV -->
       <nav
         class="fixed top-0 left-0 w-full z-50 px-6 md:px-10 py-6 flex justify-between items-center pointer-events-none"
         style="mix-blend-mode: difference"
@@ -433,152 +509,40 @@
         <span
           id="nav-to-top"
           class="nav-word font-display text-[9px] tracking-[.3em] uppercase text-ink opacity-0 pointer-events-auto cursor-pointer"
-          >Dinda & Faisal</span
+          >Dinda &amp; Ashel</span
         >
       </nav>
 
+      <!-- ─── HERO ────────────────────────────────────────────────────────────── -->
       <section id="hero" class="relative h-svh overflow-hidden">
-        <div class="hero-slide" id="slide-0">
-          <img
-            id="hero-img-0"
-            src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08054-1.webp"
-            alt="Dinda & Faisal"
-            fetchpriority="high"
-            decoding="async"
-            width="1920"
-            height="1080"
-          />
-        </div>
-        <div class="hero-slide" id="slide-1">
-          <img
-            src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08055.webp"
-            alt="Dinda & Faisal"
-            loading="lazy"
-            decoding="async"
-            width="1920"
-            height="1080"
-          />
-        </div>
-        <div class="hero-slide" id="slide-2">
-          <img
-            src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08056.webp"
-            alt="Dinda & Faisal"
-            loading="lazy"
-            decoding="async"
-            width="1920"
-            height="1080"
-          />
-        </div>
-        <div class="hero-slide" id="slide-3">
-          <img
-            src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08057.webp"
-            alt="Dinda & Faisal"
-            loading="lazy"
-            decoding="async"
-            width="1920"
-            height="1080"
-          />
-        </div>
-        <div class="hero-slide" id="slide-4">
-          <img
-            src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08058.webp"
-            alt="Dinda & Faisal"
-            loading="lazy"
-            decoding="async"
-            width="1920"
-            height="1080"
-          />
-        </div>
-        <div class="hero-slide" id="slide-5">
-          <img
-            src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08059.webp"
-            alt="Dinda & Faisal"
-            loading="lazy"
-            decoding="async"
-            width="1920"
-            height="1080"
-          />
-        </div>
-        <div class="hero-slide" id="slide-6">
-          <img
-            src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08060.webp"
-            alt="Dinda & Faisal"
-            loading="lazy"
-            decoding="async"
-            width="1920"
-            height="1080"
-          />
-        </div>
-        <div class="hero-slide" id="slide-7">
-          <img
-            src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08062.webp"
-            alt="Dinda & Faisal"
-            loading="lazy"
-            decoding="async"
-            width="1920"
-            height="1080"
-          />
-        </div>
-        <div class="hero-slide" id="slide-8">
-          <img
-            src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08054 (1).jpg"
-            alt="Dinda & Faisal"
-            loading="lazy"
-            decoding="async"
-            width="1920"
-            height="1080"
-          />
-        </div>
-        <div class="hero-slide" id="slide-9">
-          <img
-            src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08054 (11).webp"
-            alt="Dinda & Faisal"
-            loading="lazy"
-            decoding="async"
-            width="1920"
-            height="1080"
-          />
-        </div>
-        <div class="hero-slide" id="slide-10">
-          <img
-            src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08054 (12).webp"
-            alt="Dinda & Faisal"
-            loading="lazy"
-            decoding="async"
-            width="1920"
-            height="1080"
-          />
-        </div>
-        <div class="hero-slide" id="slide-11">
-          <img
-            src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08059 (1).webp"
-            alt="Dinda & Faisal"
-            loading="lazy"
-            decoding="async"
-            width="1920"
-            height="1080"
-          />
-        </div>
-
+        <!-- 1 foto saja, dengan slow-zoom halus -->
         <div
-          class="absolute inset-0 z-[1] pointer-events-none"
+          class="hero-slide"
+          id="slide-0"
+          data-src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08055.webp"
+        ></div>
+
+        <!-- gradient overlay — dark top + dark bottom, lighter mid so face shows -->
+        <div
+          class="absolute inset-0 z-[1]"
           style="
             background: linear-gradient(
               180deg,
               rgba(22, 19, 15, 0.72) 0%,
-              rgba(22, 19, 15, 0.2) 35%,
-              rgba(22, 19, 15, 0.15) 60%,
-              rgba(22, 19, 15, 0.85) 100%
+              rgba(22, 19, 15, 0.25) 30%,
+              rgba(22, 19, 15, 0.2) 60%,
+              rgba(22, 19, 15, 0.8) 100%
             );
           "
         ></div>
 
+        <!-- year watermark -->
         <div
           class="absolute inset-x-0 bottom-0 z-[2] flex items-end justify-center pointer-events-none select-none overflow-hidden leading-none"
           style="height: 55%"
         >
           <span
-            class="font-serif font-light text-ink/[.05]"
+            class="font-serif font-light text-ink/[.06]"
             style="
               font-size: clamp(7rem, 28vw, 22rem);
               letter-spacing: -0.04em;
@@ -588,14 +552,19 @@
           >
         </div>
 
+        <!-- hero text -->
         <div
           class="absolute inset-0 z-[3] flex flex-col items-center justify-center text-center px-6 pt-10"
         >
+          <!-- "Dear, [nama tamu]" — diisi JS dari query param ?k= , fallback "Dear," polos -->
           <span
+            id="hero-greeting"
             class="hero-stagger font-serif italic text-ink/70 mb-3 block opacity-0"
             style="font-size: clamp(1rem, 2.5vw, 1.3rem)"
             >Dear,</span
           >
+
+          <!-- BIG NAME — dua baris, supaya di HP sekecil apapun tidak overflow -->
           <h1
             class="hero-stagger font-serif font-light leading-[0.95] text-ink opacity-0 drop-shadow-md"
             style="font-size: clamp(3rem, 15vw, 11rem); letter-spacing: -0.02em"
@@ -605,10 +574,12 @@
               ><span
                 class="font-serif italic text-gold"
                 style="font-size: 0.5em; padding: 0 0.12em"
-                >&</span
-              >Faisal</span
+                >&amp;</span
+              >Ashel</span
             >
           </h1>
+
+          <!-- sub copy -->
           <p
             class="hero-stagger font-sans text-ink/60 mt-5 mb-2 opacity-0 leading-relaxed"
             style="font-size: clamp(0.75rem, 1.5vw, 0.9rem); max-width: 420px"
@@ -621,23 +592,26 @@
               font-size: clamp(0.95rem, 1.8vw, 1.25rem);
               text-shadow:
                 0 2px 18px rgba(22, 13, 9, 0.95),
-                0 1px 4px rgba(0, 0, 0, 0.9);
+                0 1px 4px rgba(0, 0, 0, 0.9),
+                0 0 32px rgba(22, 19, 15, 0.65);
             "
           >
             Minggu, 05 Juli 2026
           </p>
+
+          <!-- tagline -->
           <span
-            id="hero-tagline"
             class="hero-stagger font-serif italic text-ink/40 mt-6 block opacity-0"
             style="
               font-size: clamp(0.85rem, 2vw, 1.1rem);
-              min-height: 1.6em;
               letter-spacing: 0.04em;
             "
-            >Awalnya cuma kenalan…</span
           >
+            Awalnya cuma kenalan…
+          </span>
         </div>
 
+        <!-- scroll hint -->
         <div
           class="hero-scroll-hint absolute bottom-10 left-1/2 -translate-x-1/2 z-[3] flex flex-col items-center gap-2.5 opacity-0"
         >
@@ -651,15 +625,18 @@
         </div>
       </section>
 
+      <!-- ─── QURAN ─────────────────────────────────────────────────────────── -->
       <section
         class="relative py-28 md:py-36 px-[5vw] bg-bg2 text-center border-t border-b border-divider overflow-hidden"
       >
+        <!-- big decorative quote mark -->
         <div
           class="absolute top-[-30px] left-[5vw] font-serif italic text-gold/[.03] pointer-events-none select-none leading-none"
           style="font-size: 400px"
         >
-          “
+          &ldquo;
         </div>
+
         <div class="reveal max-w-3xl mx-auto relative">
           <p
             class="font-arabic text-ink/90 mb-7 leading-[2.4]"
@@ -685,6 +662,7 @@
         </div>
       </section>
 
+      <!-- ─── STORY (Kisah Kami) ────────────────────────────────────────────── -->
       <section
         id="kisah-kami"
         class="relative py-[160px] md:py-[200px] px-[5vw] overflow-hidden bg-bg border-b border-divider"
@@ -765,7 +743,7 @@
             <blockquote
               class="story-text-line font-serif italic text-ink/90 text-[1.1rem] leading-relaxed border-l-2 border-gold pl-6 mb-6 text-left max-w-[95%]"
             >
-              Bukan mereka yang mempertemukan kami. Tapi Allah yang<br />
+              mereka yang mempertemukan kami. Tapi Allah yang<br />
               menautkan hati kami.
             </blockquote>
 
@@ -790,6 +768,7 @@
         </div>
       </section>
 
+      <!-- ─── MEMPELAI ──────────────────────────────────────────────────────── -->
       <section class="py-28 md:py-36 px-[5vw] bg-bg2 border-t border-divider">
         <div class="text-center mb-16 reveal">
           <h2
@@ -804,6 +783,7 @@
             Yang berbahagia
           </p>
         </div>
+
         <div
           class="grid grid-cols-1 sm:grid-cols-2 max-w-[800px] mx-auto border border-divider reveal"
         >
@@ -824,7 +804,7 @@
               Dinda Parawansa
             </div>
             <p class="font-sans text-[.72rem] text-ink/35 leading-relaxed">
-              Putri dari Bpk. & Ibu Parawansa
+              Putri dari Bpk. &amp; Ibu Parawansa
             </p>
           </div>
           <div class="relative text-center px-10 py-12">
@@ -839,16 +819,189 @@
               class="font-serif font-light text-ink mb-1.5"
               style="font-size: clamp(1.5rem, 3vw, 2rem)"
             >
-              Achmad Faisal
+              SH. Achmad Faisal
             </div>
             <p class="font-sans text-[.72rem] text-ink/35 leading-relaxed">
-              Putra dari Bpk. & Ibu Faisal
+              Putra dari Bpk. &amp; Ibu Faisal
             </p>
           </div>
         </div>
       </section>
 
+      <!-- ─── GALLERY (bento) ───────────────────────────────────────────────── -->
+      <section class="py-28 md:py-36 px-[5vw] bg-bg2 border-t border-divider">
+        <div class="text-center mb-14 reveal">
+          <span
+            class="font-display text-[8px] tracking-[.3em] uppercase text-gold mb-4 block"
+            >Galeri</span
+          >
+          <h2
+            class="font-serif font-light text-ink"
+            style="font-size: clamp(2rem, 5vw, 3.2rem)"
+          >
+            Sepenggal Cerita Kami
+          </h2>
+        </div>
+
+        <div
+          class="reveal grid grid-cols-2 md:grid-cols-4 grid-flow-row-dense gap-3 auto-rows-[130px] md:auto-rows-[170px] max-w-[1100px] mx-auto"
+          id="gallery-grid"
+        >
+          <button
+            type="button"
+            class="gallery-item relative col-span-2 row-span-2 overflow-hidden rounded-sm group"
+            data-full="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08054%20%2810%29.webp"
+          >
+            <img
+              src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08054%20%2810%29.webp"
+              alt="Dinda & Ashel"
+              loading="lazy"
+              decoding="async"
+              class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              onerror="
+                this.closest('.gallery-item').style.background = '#16130F'
+              "
+            />
+          </button>
+          <button
+            type="button"
+            class="gallery-item relative col-span-1 row-span-1 overflow-hidden rounded-sm group"
+            data-full="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08057.webp"
+          >
+            <img
+              src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08057.webp"
+              alt="Dinda & Ashel"
+              loading="lazy"
+              decoding="async"
+              class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              onerror="
+                this.closest('.gallery-item').style.background = '#16130F'
+              "
+            />
+          </button>
+          <button
+            type="button"
+            class="gallery-item relative col-span-1 row-span-2 overflow-hidden rounded-sm group"
+            data-full="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08059%20%281%29.webp"
+          >
+            <img
+              src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08059%20%281%29.webp"
+              alt="Dinda & Ashel"
+              loading="lazy"
+              decoding="async"
+              class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              onerror="
+                this.closest('.gallery-item').style.background = '#16130F'
+              "
+            />
+          </button>
+          <button
+            type="button"
+            class="gallery-item relative col-span-1 row-span-1 overflow-hidden rounded-sm group"
+            data-full="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08054%20%2811%29.webp"
+          >
+            <img
+              src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08054%20%2811%29.webp"
+              alt="Dinda & Ashel"
+              loading="lazy"
+              decoding="async"
+              class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              onerror="
+                this.closest('.gallery-item').style.background = '#16130F'
+              "
+            />
+          </button>
+          <button
+            type="button"
+            class="gallery-item relative col-span-2 row-span-1 overflow-hidden rounded-sm group"
+            data-full="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08060.webp"
+          >
+            <img
+              src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08060.webp"
+              alt="Dinda & Ashel"
+              loading="lazy"
+              decoding="async"
+              class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              onerror="
+                this.closest('.gallery-item').style.background = '#16130F'
+              "
+            />
+          </button>
+          <button
+            type="button"
+            class="gallery-item relative col-span-1 row-span-1 overflow-hidden rounded-sm group"
+            data-full="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08058.webp"
+          >
+            <img
+              src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08058.webp"
+              alt="Dinda & Ashel"
+              loading="lazy"
+              decoding="async"
+              class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              onerror="
+                this.closest('.gallery-item').style.background = '#16130F'
+              "
+            />
+          </button>
+          <button
+            type="button"
+            class="gallery-item relative col-span-1 row-span-2 overflow-hidden rounded-sm group"
+            data-full="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08054%20%2812%29.webp"
+          >
+            <img
+              src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08054%20%2812%29.webp"
+              alt="Dinda & Ashel"
+              loading="lazy"
+              decoding="async"
+              class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              onerror="
+                this.closest('.gallery-item').style.background = '#16130F'
+              "
+            />
+          </button>
+          <button
+            type="button"
+            class="gallery-item relative col-span-1 row-span-1 overflow-hidden rounded-sm group"
+            data-full="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08056.webp"
+          >
+            <img
+              src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08056.webp"
+              alt="Dinda & Ashel"
+              loading="lazy"
+              decoding="async"
+              class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              onerror="
+                this.closest('.gallery-item').style.background = '#16130F'
+              "
+            />
+          </button>
+        </div>
+      </section>
+
+      <!-- Lightbox galeri — overlay simpel, tanpa library tambahan -->
+      <div
+        id="lightbox"
+        class="fixed inset-0 z-[5500] bg-black/90 hidden items-center justify-center p-6 cursor-zoom-out"
+      >
+        <img
+          id="lightbox-img"
+          src=""
+          alt=""
+          class="max-w-full max-h-full object-contain rounded-sm"
+        />
+        <button
+          id="lightbox-close"
+          type="button"
+          aria-label="Tutup"
+          class="absolute top-5 right-5 w-10 h-10 rounded-full border border-gold/40 bg-bg2/70 flex items-center justify-center text-ink/70 hover:text-ink"
+        >
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- ─── EVENTS ────────────────────────────────────────────────────────── -->
       <section id="acara" class="relative py-32 md:py-40 px-[5vw]">
+        <!-- watermark -->
         <div
           class="absolute inset-x-0 top-16 text-center pointer-events-none select-none"
         >
@@ -858,6 +1011,7 @@
             >2026</span
           >
         </div>
+
         <div class="text-center mb-16 reveal relative">
           <h2
             class="font-serif font-light text-ink"
@@ -866,6 +1020,7 @@
             Rangkaian Acara
           </h2>
         </div>
+
         <div
           class="grid grid-cols-1 sm:grid-cols-2 max-w-[900px] mx-auto border border-divider reveal"
         >
@@ -889,8 +1044,21 @@
               style="font-size: 0.8rem"
             >
               <strong class="text-ink font-normal">Sabtu, 04 Juli 2026</strong
-              ><br />19 Muharam 1448 H<br /><span class="text-ink/30 text-xs"
-                >Waktu menyusul</span
+              ><br />
+              19 Muharam 1448 H<br />
+              <span class="text-ink/30 text-xs">Waktu menyusul</span>
+            </div>
+            <div
+              class="flex items-start gap-2 mt-5 pt-5 border-t border-divider font-sans text-ink/40 leading-[1.7]"
+              style="font-size: 0.72rem"
+            >
+              <i
+                data-lucide="map-pin"
+                class="w-3 h-3 mt-0.5 shrink-0 text-gold/60"
+              ></i>
+              <span
+                >Jl. [Nama Jalan] No. [00], RT/RW [00/00], Kel. [Kelurahan],
+                Kec. [Kecamatan], Bogor</span
               >
             </div>
           </div>
@@ -901,7 +1069,7 @@
               >05</span
             >
             <h3 class="font-serif font-light text-ink text-2xl mb-1">
-              Akad & Resepsi
+              Akad &amp; Resepsi
             </h3>
             <span
               class="font-display text-[8px] tracking-[.3em] uppercase text-ink/35 mb-7 block"
@@ -912,14 +1080,28 @@
               style="font-size: 0.8rem"
             >
               <strong class="text-ink font-normal">Minggu, 05 Juli 2026</strong
-              ><br />20 Muharam 1448 H<br /><span class="text-ink/30 text-xs"
-                >Waktu menyusul</span
+              ><br />
+              20 Muharam 1448 H<br />
+              <span class="text-ink/30 text-xs">Waktu menyusul</span>
+            </div>
+            <div
+              class="flex items-start gap-2 mt-5 pt-5 border-t border-divider font-sans text-ink/40 leading-[1.7]"
+              style="font-size: 0.72rem"
+            >
+              <i
+                data-lucide="map-pin"
+                class="w-3 h-3 mt-0.5 shrink-0 text-gold/60"
+              ></i>
+              <span
+                >Jl. [Nama Jalan] No. [00], RT/RW [00/00], Kel. [Kelurahan],
+                Kec. [Kecamatan], Bogor</span
               >
             </div>
           </div>
         </div>
       </section>
 
+      <!-- ─── COUNTDOWN ─────────────────────────────────────────────────────── -->
       <section
         class="py-24 px-[5vw] bg-bg2 border-t border-b border-divider text-center"
       >
@@ -979,6 +1161,7 @@
         </div>
       </section>
 
+      <!-- ─── MAP ───────────────────────────────────────────────────────────── -->
       <section class="py-28 md:py-36 px-[5vw]">
         <div
           class="grid grid-cols-1 lg:grid-cols-[1fr_1.6fr] gap-12 md:gap-20 items-center max-w-[1300px] mx-auto"
@@ -1005,9 +1188,11 @@
               id="btn-maps"
               class="inline-flex items-center gap-2.5 font-display text-[8px] tracking-[.3em] uppercase text-bg bg-gold hover:bg-gold-lt px-7 py-3.5 border-none cursor-pointer transition-colors duration-300"
             >
-              <i data-lucide="map-pin" class="w-3 h-3"></i>Buka Google Maps
+              <i data-lucide="map-pin" class="w-3 h-3"></i>
+              Buka Google Maps
             </button>
           </div>
+
           <div
             class="reveal relative overflow-hidden rounded-sm h-[420px] md:h-[460px]"
           >
@@ -1018,6 +1203,7 @@
               referrerpolicy="no-referrer-when-downgrade"
               allowfullscreen
             ></iframe>
+
             <div
               class="absolute inset-0 border border-gold/15 pointer-events-none rounded-sm"
             ></div>
@@ -1025,6 +1211,7 @@
         </div>
       </section>
 
+      <!-- ─── GIFT ──────────────────────────────────────────────────────────── -->
       <section
         class="py-28 md:py-36 px-[5vw] bg-bg2 border-t border-divider text-center"
       >
@@ -1032,7 +1219,7 @@
           class="reveal font-serif font-light text-ink mb-3"
           style="font-size: clamp(2rem, 4vw, 2.6rem)"
         >
-          Hadiah & Kasih
+          Hadiah &amp; Kasih
         </h2>
         <p
           class="reveal font-sans text-ink/45 max-w-md mx-auto mb-16 leading-[1.7]"
@@ -1041,68 +1228,176 @@
           Doa dan kehadiran Anda sudah lebih dari cukup. Namun bila ingin
           memberikan tanda kasih, kami menerima melalui rekening berikut.
         </p>
+
         <div
-          class="reveal flex flex-wrap justify-center gap-5 max-w-[820px] mx-auto"
+          class="reveal flex flex-wrap justify-center gap-6 max-w-[820px] mx-auto"
         >
+          <!-- SeaBank -->
           <div
-            class="gift-card relative text-left bg-bg border border-divider hover:border-gold/35 transition-colors duration-400 p-10 overflow-hidden w-full max-w-[360px]"
+            class="bank-card relative text-left overflow-hidden w-full max-w-[380px] rounded-[20px] p-7 flex flex-col justify-between"
+            style="
+              aspect-ratio: 1.6 / 1;
+              background: linear-gradient(
+                135deg,
+                #1d2826 0%,
+                #181410 55%,
+                #16130f 100%
+              );
+              border: 1px solid rgba(184, 147, 90, 0.25);
+              box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+            "
           >
-            <span
-              class="font-display text-[9px] tracking-[.25em] uppercase text-gold mb-5 block"
-              >SeaBank</span
-            >
+            <!-- sheen halus -->
             <div
-              class="font-serif font-light text-ink text-[1.8rem] tracking-wide mb-1.5"
-            >
-              901 289 671 706
+              class="absolute inset-0 pointer-events-none opacity-40"
+              style="
+                background: radial-gradient(
+                  120% 90% at -10% -20%,
+                  rgba(184, 147, 90, 0.16),
+                  transparent 55%
+                );
+              "
+            ></div>
+
+            <div class="relative z-10 flex items-start justify-between">
+              <span
+                class="font-sans font-bold tracking-wide text-[1rem] text-ink"
+                >SeaBank</span
+              >
+              <div class="flex items-center gap-2.5">
+                <!-- chip -->
+                <span
+                  class="block w-7 h-5 rounded-[3px] border border-gold/50"
+                  style="
+                    background: linear-gradient(
+                      135deg,
+                      rgba(184, 147, 90, 0.35),
+                      rgba(184, 147, 90, 0.12)
+                    );
+                  "
+                ></span>
+                <i data-lucide="wifi" class="w-4 h-4 text-ink/40 rotate-90"></i>
+              </div>
             </div>
-            <div
-              class="font-sans text-[.72rem] tracking-[.1em] uppercase text-ink/35 mb-7"
-            >
-              Achmad Faisal
+
+            <div class="relative z-10">
+              <div
+                class="font-sans text-[1.15rem] sm:text-[1.3rem] tracking-[0.12em] text-ink mb-4"
+                style="font-variant-numeric: tabular-nums"
+              >
+                9012 8967 1706
+              </div>
+              <div class="flex items-end justify-between">
+                <div>
+                  <span
+                    class="block font-sans text-[.6rem] tracking-[.15em] uppercase text-ink/35 mb-1"
+                    >Pemegang Rekening</span
+                  >
+                  <span
+                    class="font-sans text-[.78rem] tracking-[.08em] uppercase text-ink/80"
+                    >Achmad Faisal</span
+                  >
+                </div>
+                <button
+                  class="copy-btn inline-flex items-center gap-1.5 font-display text-[8px] tracking-[.2em] uppercase text-gold hover:text-ink bg-none border-none cursor-pointer transition-colors duration-200 p-0 shrink-0"
+                  onclick="handleCopy('901289671706', this)"
+                >
+                  <i data-lucide="copy" class="w-3 h-3"></i>
+                  <span>Salin</span>
+                </button>
+              </div>
             </div>
-            <button
-              class="copy-btn inline-flex items-center gap-2 font-display text-[8px] tracking-[.25em] uppercase text-gold hover:text-ink bg-none border-none cursor-pointer transition-colors duration-200 p-0"
-              onclick="handleCopy('901289671706', this)"
-            >
-              <i data-lucide="copy" class="w-3 h-3"></i><span>Salin Nomor</span>
-            </button>
           </div>
+
+          <!-- BNI -->
           <div
-            class="gift-card relative text-left bg-bg border border-divider hover:border-gold/35 transition-colors duration-400 p-10 overflow-hidden w-full max-w-[360px]"
+            class="bank-card relative text-left overflow-hidden w-full max-w-[380px] rounded-[20px] p-7 flex flex-col justify-between"
+            style="
+              aspect-ratio: 1.6 / 1;
+              background: linear-gradient(
+                135deg,
+                #28201a 0%,
+                #181410 55%,
+                #16130f 100%
+              );
+              border: 1px solid rgba(184, 147, 90, 0.25);
+              box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+            "
           >
-            <span
-              class="font-display text-[9px] tracking-[.25em] uppercase text-gold mb-5 block"
-              >BNI</span
-            >
+            <!-- sheen halus -->
             <div
-              class="font-serif font-light text-ink text-[1.8rem] tracking-wide mb-1.5"
-            >
-              079 297 2790
+              class="absolute inset-0 pointer-events-none opacity-40"
+              style="
+                background: radial-gradient(
+                  120% 90% at -10% -20%,
+                  rgba(184, 147, 90, 0.16),
+                  transparent 55%
+                );
+              "
+            ></div>
+
+            <div class="relative z-10 flex items-start justify-between">
+              <span
+                class="font-sans font-bold tracking-wide text-[1rem] text-ink"
+                >BNI</span
+              >
+              <div class="flex items-center gap-2.5">
+                <!-- chip -->
+                <span
+                  class="block w-7 h-5 rounded-[3px] border border-gold/50"
+                  style="
+                    background: linear-gradient(
+                      135deg,
+                      rgba(184, 147, 90, 0.35),
+                      rgba(184, 147, 90, 0.12)
+                    );
+                  "
+                ></span>
+                <i data-lucide="wifi" class="w-4 h-4 text-ink/40 rotate-90"></i>
+              </div>
             </div>
-            <div
-              class="font-sans text-[.72rem] tracking-[.1em] uppercase text-ink/35 mb-7"
-            >
-              Dinda Parawansa
+
+            <div class="relative z-10">
+              <div
+                class="font-sans text-[1.15rem] sm:text-[1.3rem] tracking-[0.12em] text-ink mb-4"
+                style="font-variant-numeric: tabular-nums"
+              >
+                0792 9727 90
+              </div>
+              <div class="flex items-end justify-between">
+                <div>
+                  <span
+                    class="block font-sans text-[.6rem] tracking-[.15em] uppercase text-ink/35 mb-1"
+                    >Pemegang Rekening</span
+                  >
+                  <span
+                    class="font-sans text-[.78rem] tracking-[.08em] uppercase text-ink/80"
+                    >Dinda Parawansa</span
+                  >
+                </div>
+                <button
+                  class="copy-btn inline-flex items-center gap-1.5 font-display text-[8px] tracking-[.2em] uppercase text-gold hover:text-ink bg-none border-none cursor-pointer transition-colors duration-200 p-0 shrink-0"
+                  onclick="handleCopy('0792972790', this)"
+                >
+                  <i data-lucide="copy" class="w-3 h-3"></i>
+                  <span>Salin</span>
+                </button>
+              </div>
             </div>
-            <button
-              class="copy-btn inline-flex items-center gap-2 font-display text-[8px] tracking-[.25em] uppercase text-gold hover:text-ink bg-none border-none cursor-pointer transition-colors duration-200 p-0"
-              onclick="handleCopy('0792972790', this)"
-            >
-              <i data-lucide="copy" class="w-3 h-3"></i><span>Salin Nomor</span>
-            </button>
           </div>
         </div>
       </section>
 
+      <!-- ─── WISHES ────────────────────────────────────────────────────────── -->
       <section class="py-28 md:py-36 px-[5vw]">
         <div class="max-w-[720px] mx-auto">
           <h2
             class="reveal font-serif font-light text-ink text-center mb-14"
             style="font-size: clamp(2rem, 4vw, 2.6rem)"
           >
-            Doa & Ucapan
+            Doa &amp; Ucapan
           </h2>
+
           <form class="reveal mb-16" onsubmit="submitWish(event)">
             <div class="mb-7">
               <input
@@ -1110,7 +1405,7 @@
                 type="text"
                 placeholder="Nama Anda"
                 required
-                class="w-full bg-transparent border-0 border-b border-ink/12 py-3 pb-3.5 font-sans text-[.85rem] text-ink placeholder:text-ink/20 focus:outline-none transition-colors duration-300"
+                class="w-full bg-transparent border-0 border-b border-ink/12 py-3 pb-3.5 font-sans text-[.85rem] text-ink placeholder:text-ink/20 focus:outline-none focus:border-b-gold transition-colors duration-300"
                 style="border-bottom: 1px solid rgba(232, 224, 208, 0.12)"
                 onfocus="this.style.borderBottomColor = '#B8935A'"
                 onblur="this.style.borderBottomColor = 'rgba(232,224,208,.12)'"
@@ -1132,16 +1427,19 @@
               <button
                 type="submit"
                 id="wish-btn"
-                class="inline-flex items-center gap-2.5 font-display text-[8px] tracking-[.3em] uppercase text-bg bg-gold hover:bg-gold-lt px-7 py-3.5 border-none cursor-pointer transition-colors duration-300 disabled:opacity-50"
+                class="inline-flex items-center gap-2.5 font-display text-[8px] tracking-[.3em] uppercase text-bg bg-gold hover:bg-gold-lt px-7 py-3.5 border-none cursor-pointer transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <i data-lucide="send" class="w-2.5 h-2.5"></i>Kirim Ucapan
+                <i data-lucide="send" class="w-2.5 h-2.5"></i>
+                Kirim Ucapan
               </button>
             </div>
           </form>
+
           <div class="reveal flex flex-col gap-4" id="wishes-list"></div>
         </div>
       </section>
 
+      <!-- ─── FOOTER ────────────────────────────────────────────────────────── -->
       <footer class="py-16 px-[5vw] bg-bg2 border-t border-divider text-center">
         <span
           class="font-display text-[8px] tracking-[.3em] uppercase text-gold/70 mb-5 block"
@@ -1151,23 +1449,27 @@
           class="font-serif font-light text-ink mb-6"
           style="font-size: clamp(1.5rem, 4vw, 2.2rem)"
         >
-          Dinda<span class="font-serif italic text-gold px-1">&</span>Faisal
+          Dinda<span class="font-serif italic text-gold px-1">&amp;</span>Ashel
         </div>
         <div
           class="flex flex-col sm:flex-row justify-center items-center gap-3 sm:gap-10 font-sans text-[.7rem] text-ink/35 leading-relaxed mb-8"
         >
-          <span>Putri dari Bpk. & Ibu Parawansa</span>
+          <span>Putri dari Bpk. &amp; Ibu Parawansa</span>
           <span class="hidden sm:inline text-gold/40">•</span>
-          <span>Putra dari Bpk. & Ibu Faisal</span>
+          <span>Putra dari Bpk. &amp; Ibu Faisal</span>
         </div>
         <p
           class="font-sans text-[.68rem] tracking-[.15em] uppercase text-ink/20"
         >
-          © 2026 · Semoga Allah meridhoi perjalanan kami
+          © 2026 &nbsp;·&nbsp; Semoga Allah meridhoi perjalanan kami
         </p>
       </footer>
     </div>
+    <!-- /main-content -->
 
+    <!-- ═══════════════════════════════════════════════════
+     SCRIPTS
+═══════════════════════════════════════════════════ -->
     <script
       defer
       src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"
@@ -1186,157 +1488,128 @@
     ></script>
 
     <script>
-      // ══════════════════════════════════════════════════════
-      //  CONFIG
-      // ══════════════════════════════════════════════════════
+      // ── CONFIG ─────────────────────────────────────────────
+      // PENTING: pakai PUBLISHABLE key (sb_publishable_...), JANGAN secret key (sb_secret_...).
+      // Secret key bypass RLS — kalau dipasang di sini, siapapun yang "View Page Source"
+      // bisa baca/tulis/hapus SELURUH tabel di project Supabase kamu.
+      // Ambil publishable key di: Dashboard Supabase > Settings > API Keys > Publishable key.
       const SUPABASE_URL = "https://czirygovdetzkdqjxedj.supabase.co";
       const SUPABASE_KEY = "sb_publishable_pEMi7il-nXmenazfyO0jog_uL25n77f";
 
-      // ══════════════════════════════════════════════════════
-      //  PRELOAD HERO
-      // ══════════════════════════════════════════════════════
-      (function preloadHero() {
-        const FIRST_SRC =
-          "/Foto/Foto-Request-Client/preview/AhaConvert_GNT08054-1.webp";
-        const bar = document.getElementById("env-load-bar");
-        const barWrap = document.getElementById("env-load-bar-wrap");
-        const label = document.getElementById("env-load-label");
-        const btn = document.getElementById("env-open-btn");
-        const hint = document.getElementById("env-hint");
-        const TIMEOUT = 4000;
-
-        let done = false;
-
-        function setProgress(p) {
-          if (bar) bar.style.width = p + "%";
-        }
-
-        function unlock() {
-          if (done) return;
-          done = true;
-          setProgress(100);
-          setTimeout(() => {
-            if (barWrap) barWrap.style.opacity = "0";
-            if (label) label.classList.remove("is-visible");
-            if (btn) {
-              btn.disabled = false;
-              btn.style.cursor = "pointer";
-            }
-            if (hint) {
-              hint.style.opacity = "1";
-              hint.style.transition = "opacity .5s";
-            }
-          }, 300);
-        }
-
-        if (barWrap) barWrap.classList.add("is-loading");
-        if (label) label.classList.add("is-visible");
-
-        let fakePct = 0;
-        const fakeInterval = setInterval(() => {
-          fakePct = Math.min(fakePct + 4, 60);
-          setProgress(fakePct);
-          if (fakePct >= 60) clearInterval(fakeInterval);
-        }, 80);
-
-        const img = new Image();
-
-        const supportsFetch =
-          typeof fetch !== "undefined" && typeof ReadableStream !== "undefined";
-
-        if (supportsFetch) {
-          fetch(FIRST_SRC)
-            .then((res) => {
-              const total = parseInt(
-                res.headers.get("content-length") || "0",
-                10,
-              );
-              const reader = res.body.getReader();
-              let received = 0;
-              function read() {
-                return reader.read().then(({ done: d, value }) => {
-                  if (d) {
-                    unlock();
-                    return;
-                  }
-                  received += value.byteLength;
-                  if (total > 0) {
-                    const pct = Math.round((received / total) * 100);
-                    setProgress(Math.max(pct, fakePct));
-                  }
-                  return read();
-                });
-              }
-              return read();
-            })
-            .catch(unlock);
-        } else {
-          img.onload = unlock;
-          img.onerror = unlock;
-          img.src = FIRST_SRC;
-        }
-        setTimeout(unlock, TIMEOUT);
-      })();
-
-      // ══════════════════════════════════════════════════════
-      //  HELPERS
-      // ══════════════════════════════════════════════════════
+      // ── SAFE HELPERS ────────────────────────────────────────
       function ci() {
         if (window.lucide && typeof window.lucide.createIcons === "function")
           window.lucide.createIcons();
       }
       function escHtml(s) {
         return String(s)
-          .replace(/&/g, "&")
-          .replace(/</g, "<")
-          .replace(/>/g, ">");
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
       }
+
+      // ── PERSONALISASI NAMA TAMU (?k=) ───────────────────────
+      // Link unik per tamu: undangan.com/?k=Budi%20Santoso
+      // Satu sumber data (getGuestName) dipakai di kartu sampul DAN di hero,
+      // supaya tidak ada logic yang diduplikasi (DRY).
+      //
+      // Format penulisan nama tamu di Indonesia sering seperti "Aldi&Partner"
+      // (tanpa spasi di sekitar "&", langsung nyambung ke kata berikutnya).
+      // formatGuestName menormalkan ini supaya selalu tampil rapi sebagai
+      // "Aldi & Partner" — spasi otomatis ditambahkan sebelum & sesudah "&"
+      // kalau belum ada, tanpa mengubah bagian nama yang lain.
+      function formatGuestName(name) {
+        return name
+          .replace(/\s*&\s*/g, " & ") // "Aldi&Partner" -> "Aldi & Partner"
+          .replace(/\s{2,}/g, " ") // rapikan kalau ada spasi dobel
+          .trim();
+      }
+
+      function getGuestName() {
+        const raw = new URLSearchParams(window.location.search).get("k");
+        if (!raw) return null;
+        let name = raw.replace(/[-_+]/g, " ").trim();
+        if (!name) return null;
+        if (name.length > 60) name = name.slice(0, 60);
+        name = formatGuestName(name);
+        return name;
+      }
+
+      function applyGuestPersonalization() {
+        const name = getGuestName();
+
+        // Kartu sampul: tampilkan blok "Kepada Bapak/Ibu/Saudara/i [Nama]"
+        const guestBlock = document.getElementById("env-guest-block");
+        const guestNameEl = document.getElementById("env-guest-name");
+        if (name && guestBlock && guestNameEl) {
+          guestNameEl.textContent = name; // textContent = aman dari HTML injection
+          guestBlock.classList.remove("hidden");
+        }
+
+        // Hero: "Dear," -> "Dear, [Nama],"
+        const heroGreeting = document.getElementById("hero-greeting");
+        if (name && heroGreeting) {
+          heroGreeting.textContent = `Dear, ${name},`;
+        }
+      }
+
+      // Bungkus tiap kata dalam <span> supaya bisa di-animasi satu-satu
+      // (alternatif gratis untuk GSAP SplitText, tanpa lisensi Club).
       function splitWords(el) {
         if (!el || el.dataset.split) return;
         el.dataset.split = "1";
-        el.innerHTML = el.textContent
+        const text = el.textContent;
+        el.innerHTML = text
           .split(/(\s+)/)
           .map((part) =>
             part.trim() === ""
               ? part
-              : `<span class="split-word" style="opacity:0;transform:translateY(10px)">${escHtml(part)}</span>`,
+              : `<span class="split-word inline-block" style="opacity:0;transform:translateY(10px)">${escHtml(part)}</span>`,
           )
           .join("");
       }
 
-      // ══════════════════════════════════════════════════════
-      //  SUPABASE + WISHES
-      // ══════════════════════════════════════════════════════
+      // ── SUPABASE ────────────────────────────────────────────
       let sb = null;
       function initSupabase() {
-        if (window.supabase && SUPABASE_KEY.startsWith("sb_publishable_"))
+        const looksLikePublishable = SUPABASE_KEY.startsWith("sb_publishable_");
+        if (window.supabase && looksLikePublishable) {
           sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        } else if (window.supabase && !looksLikePublishable) {
+          console.warn(
+            "Supabase belum di-init: SUPABASE_KEY bukan publishable key (sb_publishable_...). Jangan pakai secret key di sini.",
+          );
+        }
       }
+
+      // ── COMMENTS ────────────────────────────────────────────
       let comments = [
         {
           id: 1,
           name: "Sahabat Lama",
           message:
-            "Selamat menempuh hidup baru. Semoga langgeng, penuh berkah, dan selalu bahagia — Dinda & Faisal.",
+            "Selamat menempuh hidup baru. Semoga langgeng, penuh berkah, dan selalu bahagia — Dinda & Ashel.",
           created_at: new Date().toISOString(),
         },
       ];
+
       function renderWishes() {
         const el = document.getElementById("wishes-list");
         if (!el) return;
         el.innerHTML = comments
           .map(
             (c) => `
-        <div class="wish-item relative bg-bg2 border border-divider p-7 pl-8">
-          <div class="flex justify-between items-start mb-3 pl-8">
-            <span class="font-display text-[9px] tracking-[.2em] uppercase text-gold">${escHtml(c.name)}</span>
-            <span class="font-sans text-[.68rem] text-ink/25">${new Date(c.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}</span>
-          </div>
-          <p class="font-serif italic text-ink/65 leading-[1.65] text-[1rem] pl-8">${escHtml(c.message)}</p>
-        </div>`,
+    <div class="wish-item relative bg-bg2 border border-divider p-7 pl-8">
+      <div class="flex justify-between items-start mb-3 pl-8">
+        <span class="font-display text-[9px] tracking-[.2em] uppercase text-gold">${escHtml(c.name)}</span>
+        <span class="font-sans text-[.68rem] text-ink/25">${new Date(c.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}</span>
+      </div>
+      <p class="font-serif italic text-ink/65 leading-[1.65] text-[1rem] pl-8">${escHtml(c.message)}</p>
+    </div>`,
           )
           .join("");
       }
+
       async function fetchWishes() {
         if (!sb) return;
         const { data, error } = await sb
@@ -1348,6 +1621,7 @@
           renderWishes();
         }
       }
+
       async function submitWish(e) {
         e.preventDefault();
         const name = document.getElementById("wish-name").value.trim();
@@ -1378,10 +1652,12 @@
           '<i data-lucide="send" class="w-2.5 h-2.5"></i> Kirim Ucapan';
         setTimeout(ci, 0);
       }
+
       function handleCopy(text, btn) {
         navigator.clipboard.writeText(text).catch(() => {});
         const icon = btn.querySelector("i");
         const label = btn.querySelector("span");
+        const originalLabel = label ? label.textContent : "";
         if (icon) {
           icon.setAttribute("data-lucide", "check");
           ci();
@@ -1392,40 +1668,131 @@
             icon.setAttribute("data-lucide", "copy");
             ci();
           }
-          if (label) label.textContent = "Salin Nomor";
+          if (label) label.textContent = originalLabel;
         }, 2000);
       }
 
-      // ══════════════════════════════════════════════════════
-      //  COUNTDOWN
-      // ══════════════════════════════════════════════════════
+      // ── COUNTDOWN ───────────────────────────────────────────
       function startCountdown() {
         const target = new Date("2026-07-05T08:00:00+07:00").getTime();
         function tick() {
-          const d = target - Date.now();
-          if (d <= 0) return;
-          document.getElementById("cd-days").textContent = String(
-            Math.floor(d / 86400000),
-          ).padStart(2, "0");
-          document.getElementById("cd-hours").textContent = String(
-            Math.floor((d % 86400000) / 3600000),
-          ).padStart(2, "0");
-          document.getElementById("cd-mins").textContent = String(
-            Math.floor((d % 3600000) / 60000),
-          ).padStart(2, "0");
-          document.getElementById("cd-secs").textContent = String(
-            Math.floor((d % 60000) / 1000),
-          ).padStart(2, "0");
+          const dist = target - Date.now();
+          if (dist <= 0) return;
+          const d = Math.floor(dist / 86400000);
+          const h = Math.floor((dist % 86400000) / 3600000);
+          const m = Math.floor((dist % 3600000) / 60000);
+          const s = Math.floor((dist % 60000) / 1000);
+          document.getElementById("cd-days").textContent = String(d).padStart(
+            2,
+            "0",
+          );
+          document.getElementById("cd-hours").textContent = String(h).padStart(
+            2,
+            "0",
+          );
+          document.getElementById("cd-mins").textContent = String(m).padStart(
+            2,
+            "0",
+          );
+          document.getElementById("cd-secs").textContent = String(s).padStart(
+            2,
+            "0",
+          );
         }
         tick();
         setInterval(tick, 1000);
       }
 
-      // ══════════════════════════════════════════════════════
-      //  CURSOR
-      // ══════════════════════════════════════════════════════
+      // ── PRELOADER ────────────────────────────────────────────
+      // Preload foto-foto hero secara nyata (bukan cuma efek visual):
+      // background-image baru dipasang ke elemen hero SETELAH file-nya
+      // benar-benar sukses dimuat. Jadi tidak ada "foto kosong" yang
+      // kelihatan sekilas saat envelope dibuka.
+      function initPreloader() {
+        const pre = document.getElementById("preloader");
+        const frame = document.getElementById("preloader-frame");
+        const imgEl = document.getElementById("preloader-img");
+        const pctEl = document.getElementById("preloader-pct");
+        if (!pre) return;
+
+        const heroSlides = Array.from(document.querySelectorAll(".hero-slide"));
+        const sources = heroSlides.map((s) => s.dataset.src).filter(Boolean);
+
+        const total = sources.length || 1;
+        let loaded = 0;
+        const startedAt = performance.now();
+        const MIN_SHOW = 500; // ms — biar ga "kedip" kalau semua sudah cached
+        const MAX_WAIT = 3500; // ms — jaga-jaga kalau koneksi lambat/gambar gagal
+
+        function setPct(p) {
+          if (pctEl) pctEl.textContent = Math.round(p) + "%";
+        }
+
+        let finished = false;
+        function finish() {
+          if (finished) return;
+          finished = true;
+          const elapsed = performance.now() - startedAt;
+          const wait = Math.max(0, MIN_SHOW - elapsed);
+          setTimeout(() => {
+            if (frame) frame.classList.add("is-wide");
+            setTimeout(() => {
+              pre.classList.add("is-hidden");
+            }, 220);
+          }, wait);
+        }
+
+        if (!sources.length) {
+          setPct(100);
+          finish();
+          return;
+        }
+
+        sources.forEach((src, i) => {
+          const im = new Image();
+          im.onload = () => {
+            loaded++;
+            setPct((loaded / total) * 100);
+            if (heroSlides[i]) {
+              heroSlides[i].style.backgroundImage = `url("${src}")`;
+            }
+            if (imgEl) {
+              imgEl.src = src;
+              imgEl.classList.add("is-loaded");
+            }
+            if (loaded >= total) finish();
+          };
+          im.onerror = () => {
+            // gambar gagal dimuat: biarkan slide pakai warna gelap bawaan
+            // (tidak ditampilkan rusak), tetap hitung progres supaya lanjut.
+            loaded++;
+            setPct((loaded / total) * 100);
+            if (loaded >= total) finish();
+          };
+          im.src = src;
+        });
+
+        // safety net: jangan sampai pengunjung nyangkut di loading screen
+        setTimeout(() => {
+          if (!finished) finish();
+        }, MAX_WAIT);
+      }
+
+      // Dipanggil segera (bukan di window 'load') supaya progres yang
+      // ditampilkan benar-benar merefleksikan foto yang sedang dimuat.
+      initPreloader();
+      applyGuestPersonalization();
+
+      // ── CURSOR ──────────────────────────────────────────────
+      // Hanya jalan di device dengan mouse halus. Di HP/tablet, loop rAF
+      // ini cuma buang-buang baterai & CPU karena cursor custom toh ga
+      // kelihatan di touchscreen — makanya di-skip total.
       function initCursor() {
-        if (!matchMedia("(hover:hover) and (pointer:fine)").matches) return;
+        const supportsFineCursor = matchMedia(
+          "(hover: hover) and (pointer: fine)",
+        ).matches;
+        if (!supportsFineCursor) return;
+
         const dot = document.getElementById("c-dot");
         const ring = document.getElementById("c-ring");
         let mx = innerWidth / 2,
@@ -1445,55 +1812,91 @@
         })();
         document.querySelectorAll("a,button,input,textarea").forEach((el) => {
           el.addEventListener("mouseenter", () => {
-            ring.style.width = "44px";
-            ring.style.height = "44px";
-            ring.style.borderColor = "#B8935A";
-            ring.style.background = "rgba(184,147,90,.08)";
+            ring.style.cssText +=
+              "width:44px;height:44px;border-color:#B8935A;background:rgba(184,147,90,.08)";
             dot.style.transform = "translate(-50%,-50%) scale(0)";
           });
           el.addEventListener("mouseleave", () => {
-            ring.style.width = "32px";
-            ring.style.height = "32px";
-            ring.style.borderColor = "rgba(232,224,208,.35)";
-            ring.style.background = "transparent";
+            ring.style.cssText +=
+              "width:32px;height:32px;border-color:rgba(232,224,208,.35);background:transparent";
             dot.style.transform = "translate(-50%,-50%) scale(1)";
           });
         });
       }
 
-      // ══════════════════════════════════════════════════════
-      //  MUSIC
-      // ══════════════════════════════════════════════════════
+      // ── MUSIC ───────────────────────────────────────────────
       function initMusic() {
         const audio = document.getElementById("bg-music");
         const btn = document.getElementById("music-toggle");
         const icon = document.getElementById("music-icon");
+        const volumePop = document.getElementById("volume-pop");
+        const volumeRange = document.getElementById("volume-range");
         if (!audio || !btn) return;
-        function setIcon(p) {
+
+        // Volume tersimpan dari kunjungan sebelumnya (fallback 60%)
+        const VOL_KEY = "df-wedding-volume";
+        let savedVol = parseInt(localStorage.getItem(VOL_KEY), 10);
+        if (isNaN(savedVol) || savedVol < 0 || savedVol > 100) savedVol = 60;
+        audio.volume = savedVol / 100;
+        if (volumeRange) volumeRange.value = String(savedVol);
+
+        function setIcon(playing) {
           if (icon) {
-            icon.setAttribute("data-lucide", p ? "pause" : "disc-3");
-            icon.classList.toggle("spinning", p);
+            icon.setAttribute("data-lucide", playing ? "pause" : "disc-3");
+            icon.classList.toggle("spinning", playing);
             ci();
           }
-          btn.setAttribute("aria-label", p ? "Jeda musik" : "Putar musik");
+          btn.setAttribute(
+            "aria-label",
+            playing ? "Jeda musik" : "Putar musik",
+          );
+          btn.setAttribute("aria-expanded", playing ? "true" : "false");
+          // Slider volume otomatis muncul selagi musik main, hilang saat jeda
+          if (volumePop) {
+            volumePop.classList.toggle("opacity-0", !playing);
+            volumePop.classList.toggle("scale-95", !playing);
+            volumePop.classList.toggle("pointer-events-none", !playing);
+            volumePop.classList.toggle("opacity-100", playing);
+            volumePop.classList.toggle("scale-100", playing);
+          }
         }
+
         btn.addEventListener("click", () => {
-          audio.paused ? audio.play().catch(() => {}) : audio.pause();
+          if (audio.paused) {
+            audio.play().catch(() => {});
+          } else {
+            audio.pause();
+          }
         });
+
+        if (volumeRange) {
+          volumeRange.addEventListener("input", () => {
+            const v = Number(volumeRange.value);
+            audio.volume = v / 100;
+            localStorage.setItem(VOL_KEY, String(v));
+          });
+        }
+
         audio.addEventListener("play", () => setIcon(true));
         audio.addEventListener("pause", () => setIcon(false));
-        window.__tryPlayMusic = () => audio.play().catch(() => {});
+
+        // Dipanggil saat user klik "Buka Undangan" — itu gesture asli,
+        // jadi browser mengizinkan audio diputar otomatis di momen itu.
+        window.__tryPlayMusic = () => {
+          audio.play().catch(() => {
+            // Autoplay diblokir browser: biarkan tombol manual yang memulai.
+          });
+        };
       }
 
-      // ══════════════════════════════════════════════════════
-      //  ENVELOPE OPEN
-      // ══════════════════════════════════════════════════════
+      // ── ENVELOPE OPEN ────────────────────────────────────────
       function openInvitation() {
         const env = document.getElementById("envelope-screen");
         const card = document.getElementById("env-card");
-        const btn = document.getElementById("env-open-btn");
         const main = document.getElementById("main-content");
-        if (btn) btn.disabled = true;
+
+        card.onclick = null;
+        card.querySelector(".env-open-btn").disabled = true;
 
         gsap
           .timeline()
@@ -1517,27 +1920,35 @@
           .call(runSiteIntro, null, "-=0.55");
       }
 
-      // ══════════════════════════════════════════════════════
-      //  SITE INTRO
-      // ══════════════════════════════════════════════════════
+      // ── SITE INTRO & ANIMATIONS ────────────────────────────
       function runSiteIntro() {
         gsap.registerPlugin(ScrollTrigger, TextPlugin);
-        const rm = matchMedia("(prefers-reduced-motion:reduce)").matches;
 
-        if (rm) {
-          gsap.set(".nav-word,.hero-stagger,.hero-scroll-hint,.reveal", {
-            opacity: 1,
-            y: 0,
+        const prefersReducedMotion = matchMedia(
+          "(prefers-reduced-motion: reduce)",
+        ).matches;
+
+        if (prefersReducedMotion) {
+          // Tamu yang minta animasi diminimalkan: tampilkan semua konten
+          // langsung tanpa transform/fade, foto tetap diam (tanpa Ken Burns/pin).
+          gsap.set(
+            ".nav-word, .hero-stagger, .hero-scroll-hint, .reveal, .story-line",
+            { opacity: 1, y: 0, filter: "none" },
+          );
+          document.querySelectorAll(".story-photo").forEach((p, i) => {
+            p.style.opacity = i === 0 ? "1" : "0";
           });
           document
-            .querySelectorAll(".story-line-item")
-            .forEach((el) => el.classList.add("is-active"));
-          document
-            .querySelectorAll(".story-bg-photo")
-            .forEach((p, i) => (p.style.opacity = i === 0 ? "1" : "0"));
+            .querySelectorAll(".split-heading")
+            .forEach((el) => (el.style.opacity = "1"));
+          // Kisah Kami: langsung tampilkan semua foto, tanpa scroll-reveal
+          document.querySelectorAll(".story-card").forEach((el) => {
+            el.classList.add("is-visible");
+          });
           return;
         }
 
+        // nav
         gsap.fromTo(
           ".nav-word",
           { y: -14, opacity: 0 },
@@ -1550,6 +1961,10 @@
             delay: 0.15,
           },
         );
+
+        // STAGGERED HERO TEXT — translate + opacity saja (tanpa filter:blur)
+        // supaya tidak membebani GPU di HP/laptop low-end. Tetap smooth,
+        // cuma lebih ringan.
         gsap.fromTo(
           ".hero-stagger",
           { y: 24, opacity: 0 },
@@ -1562,6 +1977,8 @@
             delay: 0.35,
           },
         );
+
+        // scroll hint
         gsap.fromTo(
           ".hero-scroll-hint",
           { opacity: 0, y: 8 },
@@ -1570,6 +1987,7 @@
 
         initKenBurns();
 
+        // STANDARD REVEALS
         document.querySelectorAll(".reveal").forEach((el) => {
           gsap.fromTo(
             el,
@@ -1584,200 +2002,296 @@
           );
         });
 
+        // SPLIT-TEXT HEADINGS — kata muncul satu-satu, stagger proporsional
+        // (total durasi tetap sama berapa pun jumlah katanya, lewat `amount`)
+        document.querySelectorAll(".split-heading").forEach((el) => {
+          splitWords(el);
+          gsap.to(el.querySelectorAll(".split-word"), {
+            opacity: 1,
+            y: 0,
+            duration: 0.7,
+            ease: "power3.out",
+            stagger: { amount: 0.5 },
+            scrollTrigger: { trigger: el, start: "top 88%" },
+          });
+        });
+
         initStorySection();
+        initStoryCards();
 
-        if (document.fonts && document.fonts.ready)
+        // Web font (Cormorant Garamond/Cinzel) yang baru selesai load bisa
+        // mengubah tinggi teks setelah ScrollTrigger dihitung pertama kali —
+        // refresh sekali lagi supaya posisi pin & reveal tetap akurat.
+        if (document.fonts && document.fonts.ready) {
           document.fonts.ready.then(() => ScrollTrigger.refresh());
-      }
-
-      // ══════════════════════════════════════════════════════
-      //  KEN BURNS
-      // ══════════════════════════════════════════════════════
-      function initKenBurns() {
-        const slides = Array.from(document.querySelectorAll(".hero-slide"));
-        if (!slides.length) return;
-
-        const phrases = [
-          "Awalnya cuma kenalan…",
-          "Dari canggung, jadi nyaman.",
-          "Dari nyaman, jadi rumah.",
-          "Satu pesan, seribu cerita.",
-          "Dua hati, satu tujuan.",
-          "Menuju keabadian bersama.",
-        ];
-        const tagline = document.getElementById("hero-tagline");
-        const SLIDE = 4.5,
-          CROSS = 1.2;
-        let cur = 0;
-
-        slides.forEach((s, i) => {
-          gsap.set(s, { opacity: i === 0 ? 1 : 0, zIndex: i === 0 ? 1 : 0 });
-          const img = s.querySelector("img");
-          if (img) gsap.set(img, { scale: 1 });
-        });
-
-        const fi = slides[0].querySelector("img");
-        if (fi)
-          gsap.to(fi, { scale: 1.07, duration: SLIDE + CROSS, ease: "none" });
-
-        function next() {
-          const c = slides[cur],
-            ni = (cur + 1) % slides.length,
-            nx = slides[ni];
-          const ci2 = c.querySelector("img"),
-            ni2 = nx.querySelector("img");
-          if (ni2) {
-            gsap.set(ni2, { scale: 1 });
-            gsap.to(ni2, {
-              scale: 1.07,
-              duration: SLIDE + CROSS,
-              ease: "none",
-            });
-          }
-          gsap.set(nx, { zIndex: 2 });
-          gsap.to(nx, { opacity: 1, duration: CROSS, ease: "power2.inOut" });
-          gsap.to(c, {
-            opacity: 0,
-            duration: CROSS,
-            ease: "power2.inOut",
-            onComplete: () => {
-              gsap.set(c, { zIndex: 0 });
-              if (ci2) gsap.set(ci2, { scale: 1 });
-            },
-          });
-          if (tagline) {
-            gsap.to(tagline, {
-              opacity: 0,
-              y: -5,
-              duration: 0.3,
-              ease: "power2.in",
-              onComplete: () => {
-                tagline.textContent = phrases[ni % phrases.length];
-                gsap.to(tagline, {
-                  opacity: 1,
-                  y: 0,
-                  duration: 0.5,
-                  ease: "power2.out",
-                });
-              },
-            });
-          }
-          cur = ni;
         }
-        setTimeout(() => {
-          next();
-          setInterval(next, SLIDE * 1000);
-        }, SLIDE * 1000);
       }
 
-      // ══════════════════════════════════════════════════════
-      //  STORY SECTION — BEHAVIOR PARALLAX + CARD SPREAD
-      // ══════════════════════════════════════════════════════
-      function initStorySection() {
-        // Animasi Teks Muncul Per Baris (Reveal)
-        gsap.utils.toArray(".story-text-line").forEach((line) => {
-          gsap.fromTo(
-            line,
-            { y: 40, opacity: 0 },
-            {
-              y: 0,
-              opacity: 1,
-              duration: 1.2,
-              ease: "power3.out",
-              scrollTrigger: {
-                trigger: line,
-                start: "top 85%",
-              },
-            },
-          );
-        });
+      // ── KISAH KAMI: FOTO BACKGROUND SCROLL-REVEAL ───────────
+      // 4 foto (.story-card) di section "Kisah Kami" muncul satu-satu,
+      // berurutan dari atas ke bawah (sesuai urutan markup: card 1 → 4),
+      // begitu section mulai masuk viewport saat di-scroll.
+      // Fade + slide naik (translateY 48px → 0), trigger sekali saja
+      // (tidak reset kalau di-scroll ulang) supaya tidak mengganggu
+      // pembacaan teks di sebelahnya.
+      function initStoryCards() {
+        const cards = gsap.utils.toArray("#kisah-kami .story-card");
+        if (!cards.length) return;
 
-        // Animasi Card (Gambar) Parallax & Reveal 1 per 1
-        gsap.utils.toArray(".story-card").forEach((card, index) => {
-          // Fade in dan naik sedikit ketika masuk layar
-          gsap.fromTo(
-            card,
-            { y: 120, opacity: 0 },
-            {
+        ScrollTrigger.create({
+          trigger: "#kisah-kami",
+          start: "top 75%",
+          once: true,
+          onEnter: () => {
+            gsap.to(cards, {
+              opacity: 0.6, // sama dengan opacity-60 di desain asli
               y: 0,
-              opacity: 1,
-              duration: 1.5,
+              duration: 1.1,
               ease: "power3.out",
-              scrollTrigger: {
-                trigger: card,
-                start: "top 95%",
-              },
-            },
-          );
-          // Gerak lambat Parallax seiring scroll ke bawah
-          gsap.to(card, {
-            yPercent: -40 + index * 8,
-            ease: "none",
+              stagger: 0.28, // berurutan atas ke bawah, jeda antar foto
+            });
+          },
+        });
+      }
+
+      // ── STORY SECTION (Kisah Kami) ──────────────────────────
+      // Desktop: section di-pin, foto bergantian + paragraf muncul
+      // satu-satu mengikuti progres scroll (mudah dibaca, tidak ada
+      // 1 foto yang berdiri statis terus).
+      // Mobile: pin dimatikan (supaya tidak terasa "nyangkut" di HP),
+      // teks reveal seperti biasa & foto bergantian otomatis tiap interval.
+      function initStorySection() {
+        const photos = gsap.utils.toArray(".story-photo");
+        const dots = gsap.utils.toArray(".story-dot");
+        if (!photos.length) return;
+
+        function setDot(i) {
+          dots.forEach((d, di) => {
+            if (di === i) {
+              d.classList.add("bg-ink");
+              d.classList.remove("bg-ink/25");
+            } else {
+              d.classList.remove("bg-ink");
+              d.classList.add("bg-ink/25");
+            }
+          });
+        }
+
+        const mm = gsap.matchMedia();
+
+        // ── DESKTOP: pinned scrollytelling ──
+        mm.add("(min-width: 768px)", () => {
+          const lines = gsap.utils.toArray(".story-line");
+          const dtl = gsap.timeline({
             scrollTrigger: {
-              trigger: "#kisah-kami",
-              start: "top bottom",
-              end: "bottom top",
-              scrub: true,
+              trigger: "#story-pin",
+              start: "top top",
+              end: "+=300%",
+              scrub: 1,
+              pin: true,
+              anticipatePin: 1,
             },
           });
+
+          const STEP = 1; // jarak antar beat timeline (satuan relatif, di-scrub jadi proporsional ke scroll)
+          dtl.to(lines[0], { opacity: 1, y: 0, duration: 0.4 }, 0);
+          dtl.to(lines[1], { opacity: 1, y: 0, duration: 0.5 }, STEP * 0.6);
+          dtl.to(
+            photos[1],
+            { opacity: 1, duration: 0.6, onStart: () => setDot(1) },
+            STEP * 0.6,
+          );
+          dtl.to(lines[2], { opacity: 1, y: 0, duration: 0.5 }, STEP * 1.3);
+          dtl.to(
+            photos[2],
+            { opacity: 1, duration: 0.6, onStart: () => setDot(2) },
+            STEP * 1.3,
+          );
+          dtl.to(lines[3], { opacity: 1, y: 0, duration: 0.5 }, STEP * 2.0);
+          dtl.to(
+            photos[3],
+            { opacity: 1, duration: 0.6, onStart: () => setDot(3) },
+            STEP * 2.0,
+          );
+          dtl.to(lines[4], { opacity: 1, y: 0, duration: 0.5 }, STEP * 2.7);
+          dtl.to(
+            photos[4],
+            { opacity: 1, duration: 0.6, onStart: () => setDot(4) },
+            STEP * 2.7,
+          );
+
+          return () => dtl.scrollTrigger && dtl.scrollTrigger.kill();
+        });
+
+        // ── MOBILE: reveal biasa + carousel foto otomatis ──
+        mm.add("(max-width: 767px)", () => {
+          gsap.fromTo(
+            ".story-line",
+            { opacity: 0, y: 30 },
+            {
+              opacity: 1,
+              y: 0,
+              duration: 0.9,
+              stagger: { amount: 0.6 },
+              ease: "power2.out",
+              scrollTrigger: {
+                trigger: ".story-text",
+                start: "top 82%",
+                toggleActions: "play none none reverse",
+              },
+            },
+          );
+
+          let idx = 0;
+          let interval = null;
+          const section = document.getElementById("story-section");
+
+          function nextPhoto() {
+            const next = (idx + 1) % photos.length;
+            gsap.to(photos[next], { opacity: 1, duration: 0.9 });
+            setDot(next);
+            idx = next;
+          }
+
+          const io = new IntersectionObserver(
+            (entries) => {
+              entries.forEach((entry) => {
+                if (entry.isIntersecting && !interval) {
+                  interval = setInterval(nextPhoto, 3200);
+                } else if (!entry.isIntersecting && interval) {
+                  clearInterval(interval);
+                  interval = null;
+                }
+              });
+            },
+            { threshold: 0.3 },
+          );
+          if (section) io.observe(section);
+
+          return () => {
+            if (interval) clearInterval(interval);
+            io.disconnect();
+          };
         });
       }
 
-      // ══════════════════════════════════════════════════════
-      //  LAZY WISHES
-      // ══════════════════════════════════════════════════════
+      // ── KEN BURNS (1 foto) ───────────────────────────────────
+      // Cuma 1 foto hero, jadi cukup zoom pelan bolak-balik (yoyo) —
+      // tidak perlu crossfade antar slide / rotasi tagline lagi.
+      function initKenBurns() {
+        const slide = document.getElementById("slide-0");
+        if (!slide) return;
+        gsap.fromTo(
+          slide,
+          { scale: 1 },
+          {
+            scale: 1.08,
+            duration: 14,
+            ease: "sine.inOut",
+            repeat: -1,
+            yoyo: true,
+          },
+        );
+      }
+
+      // ── GALLERY LIGHTBOX ─────────────────────────────────────
+      // Vanilla JS, tanpa library tambahan — klik foto galeri untuk
+      // memperbesar, klik area gelap / tombol X / Escape untuk menutup.
+      function initGallery() {
+        const lightbox = document.getElementById("lightbox");
+        const lightboxImg = document.getElementById("lightbox-img");
+        const closeBtn = document.getElementById("lightbox-close");
+        if (!lightbox || !lightboxImg) return;
+
+        function open(src, alt) {
+          lightboxImg.src = src;
+          lightboxImg.alt = alt || "";
+          lightbox.classList.remove("hidden");
+          lightbox.classList.add("flex");
+        }
+        function close() {
+          lightbox.classList.add("hidden");
+          lightbox.classList.remove("flex");
+          lightboxImg.src = "";
+        }
+
+        document.querySelectorAll(".gallery-item").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const full = btn.dataset.full || btn.querySelector("img")?.src;
+            const alt = btn.querySelector("img")?.alt;
+            if (full) open(full, alt);
+          });
+        });
+        lightbox.addEventListener("click", (e) => {
+          if (e.target === lightbox) close();
+        });
+        if (closeBtn) closeBtn.addEventListener("click", close);
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "Escape") close();
+        });
+      }
+
+      // ── LAZY LOAD WISHES ─────────────────────────────────────
+      // Render data lokal dulu (instan), baru fetch ke Supabase saat
+      // section "Doa & Ucapan" mendekati viewport — biar load awal web
+      // gak nunggu network call yang gak penting buat user yang belum
+      // scroll sejauh itu.
       function initLazyWishes() {
         const list = document.getElementById("wishes-list");
         if (!list) return;
         const section = list.closest("section") || list;
+
         if (!("IntersectionObserver" in window)) {
           fetchWishes();
           return;
         }
-        const obs = new IntersectionObserver(
+
+        const observer = new IntersectionObserver(
           (entries) => {
-            entries.forEach((e) => {
-              if (e.isIntersecting) {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
                 fetchWishes();
-                obs.disconnect();
+                observer.disconnect();
               }
             });
           },
           { rootMargin: "300px 0px" },
         );
-        obs.observe(section);
+        observer.observe(section);
       }
 
-      // ══════════════════════════════════════════════════════
-      //  BOOT
-      // ══════════════════════════════════════════════════════
+      // ── BOOT ────────────────────────────────────────────────
       window.addEventListener("load", () => {
         ci();
         initSupabase();
-        renderWishes();
+        renderWishes(); // tampil instan dari data lokal, ga nunggu network
         startCountdown();
         initCursor();
         initMusic();
-        initLazyWishes();
-
+        initLazyWishes(); // baru fetch komentar pas section-nya mau kelihatan
+        initGallery();
         document.getElementById("btn-maps").addEventListener("click", () => {
           window.open(
             "https://maps.app.goo.gl/XRZZPUU8x4NcUPLX6?g_st=aw",
             "_blank",
           );
         });
+
+        // Nav jadi bisa diklik: lompat ke atas / ke bagian acara
         const navTop = document.getElementById("nav-to-top");
-        const navEv = document.getElementById("nav-to-events");
-        if (navTop)
-          navTop.addEventListener("click", () =>
-            window.scrollTo({ top: 0, behavior: "smooth" }),
-          );
-        if (navEv)
-          navEv.addEventListener("click", () =>
+        const navEvents = document.getElementById("nav-to-events");
+        if (navTop) {
+          navTop.addEventListener("click", () => {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          });
+        }
+        if (navEvents) {
+          navEvents.addEventListener("click", () => {
             document
               .getElementById("acara")
-              .scrollIntoView({ behavior: "smooth", block: "start" }),
-          );
+              .scrollIntoView({ behavior: "smooth", block: "start" });
+          });
+        }
       });
     </script>
   </body>
