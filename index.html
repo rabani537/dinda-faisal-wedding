@@ -65,6 +65,12 @@
         border-radius: 2px;
       }
 
+      /* Scroll terasa lebih "berat"/halus secara native, membantu mengurangi
+         kesan patah-patah terutama di trackpad/wheel scroll. */
+      html {
+        scroll-behavior: smooth;
+      }
+
       /* grain */
       .grain {
         position: fixed;
@@ -117,6 +123,7 @@
         background-position: center top;
         opacity: 0;
         will-change: transform, opacity;
+        backface-visibility: hidden;
       }
       .hero-slide:first-child {
         opacity: 1;
@@ -160,32 +167,27 @@
         user-select: none;
       }
 
-      /* reveal base state */
-      .reveal {
-        opacity: 0;
-        transform: translateY(36px);
-        will-change: transform, opacity;
-      }
-
-      /* split-text words (used by splitWords() helper in JS) */
+      /* ── ANIMATION BASE STATES ──────────────────────────────
+         Semua elemen yang dikontrol GSAP TIDAK diberi opacity/transform
+         lewat inline style atau class di markup lagi. Sebagai gantinya,
+         JS yang menetapkan initial state via gsap.set() SEBELUM
+         menjalankan animasi. Ini menghindari "flash" konten di posisi
+         akhir sebelum GSAP selesai parsing/jalan (FOUC animasi), dan
+         membuat satu sumber kebenaran untuk state awal vs state akhir. */
+      .reveal,
+      .hero-stagger,
+      .nav-word,
+      .story-text-line,
+      .story-bg-card,
+      .gallery-item,
       .split-word {
         will-change: transform, opacity;
+        backface-visibility: hidden;
       }
 
       /* music toggle button */
       #music-toggle {
         -webkit-tap-highlight-color: transparent;
-      }
-      @keyframes discSpin {
-        from {
-          transform: rotate(0deg);
-        }
-        to {
-          transform: rotate(360deg);
-        }
-      }
-      #music-icon.spinning {
-        animation: discSpin 6s linear infinite;
       }
 
       /* ── PRELOADER ──────────────────────────────────────── */
@@ -250,27 +252,109 @@
         .scroll-line {
           animation: none;
         }
-        #music-icon.spinning {
-          animation: none;
+        html {
+          scroll-behavior: auto;
         }
       }
 
-      /* ── STORY CARD SCROLL-REVEAL ──────────────────────────
-         State awal foto-foto background di "Kisah Kami": tersembunyi
-         (opacity 0 + sedikit turun ke bawah). JS (initStoryCards)
-         akan mengangkat tiap foto satu-satu, berurutan dari atas ke
-         bawah, begitu section ini mulai masuk viewport saat discroll.
-         opacity dasar foto (.15) tetap dijaga lewat custom property,
-         supaya nilai akhir reveal konsisten dengan desain asli.
-      ───────────────────────────────────────────────────────── */
+      /* ── KISAH KAMI: foto tersebar di posisi berbeda-beda ──────────
+         Sebelumnya keempat foto ditumpuk PERSIS di tempat yang sama dan
+         crossfade satu ke yang lain (selalu cuma 1 foto kelihatan).
+         Sekarang tiap foto punya UKURAN & POSISI SENDIRI di dalam
+         .story-photo-stack (kiri-atas, kanan-bawah, dst — seperti foto
+         yang ditempel di papan cerita), dan foto-foto itu MUNCUL
+         SATU-SATU mengikuti progres scroll lalu TETAP terlihat (tidak
+         hilang lagi saat foto berikutnya muncul). Posisi & ukuran diatur
+         lewat width/height/top/left supaya tidak saling menutup penuh.
+      */
+      .story-photo-stack {
+        position: relative;
+      }
+      .story-photo {
+        position: absolute;
+        opacity: 0;
+        overflow: hidden;
+        will-change: opacity, transform;
+        backface-visibility: hidden;
+        box-shadow: 0 14px 34px rgba(0, 0, 0, 0.45);
+      }
+      .story-photo[data-story-index="0"] {
+        width: 42%;
+        height: 40%;
+        top: 0;
+        left: 0;
+      }
+      .story-photo[data-story-index="1"] {
+        width: 38%;
+        height: 40%;
+        top: 20%;
+        right: 0;
+        left: auto;
+      }
+      .story-photo[data-story-index="2"] {
+        width: 40%;
+        height: 37%;
+        bottom: 5%;
+        left: 0;
+        top: auto;
+      }
+      .story-photo[data-story-index="3"] {
+        width: 38%;
+        height: 35%;
+        bottom: -20%;
+        right: 0;
+        top: auto;
+        left: auto;
+      }
+
+      /* Blok teks cerita SEKARANG tampil semua sekaligus (bukan gantian
+         lagi) — jadi cukup flow normal ke bawah dengan jarak antar
+         paragraf yang rapi, tidak perlu absolute-stacking lagi karena
+         tinggi section memang boleh mengikuti total tinggi semua teks. */
+      .story-block-wrap {
+        display: flex;
+        flex-direction: column;
+        gap: 1.75rem;
+      }
+      .story-block {
+        opacity: 1;
+        will-change: opacity, transform;
+      }
+
+      /* Layout desktop: foto di kanan, teks di kiri, berdampingan */
+      @media (min-width: 768px) {
+        #kisah-kami-pin {
+          justify-content: space-between;
+        }
+        #kisah-kami-pin .story-photo-stack {
+          margin-right: 4vw;
+        }
+      }
+
+      /* ── STORY CARD SCROLL-REVEAL ────────────────────────── */
       .story-card {
         opacity: 0;
-        transform: translateY(48px);
+        transform: translateY(24px);
         will-change: transform, opacity;
       }
       .story-card.is-visible {
-        opacity: 0.6; /* sama seperti opacity-60 di markup asli */
+        opacity: 0.6;
         transform: translateY(0);
+      }
+
+      /* ── LAZY IMAGE FADE-IN ───────────────────────────────────
+         Dipakai oleh gallery & story-bg-card sebagai MARKER SELECTOR saja
+         (untuk dipilih lewat querySelectorAll di JS). State opacity/scale
+         awal & animasi munculnya SEPENUHNYA dikontrol GSAP (lihat
+         initLazyMedia() & revealLoadedImage() di <script>), supaya tidak
+         ada dua sistem animasi (CSS transition vs GSAP) yang berebut frame
+         pada elemen yang sama — itu salah satu penyebab kesan "patah" /
+         "muncul tiba-tiba" pada versi sebelumnya. Sengaja TIDAK ada
+         `transition` CSS apapun di sini. */
+      /* placeholder warna gelap dibelakang img selagi belum load */
+      .gallery-item,
+      .story-bg-card {
+        background: #1a1610;
       }
     </style>
   </head>
@@ -279,10 +363,6 @@
     <div id="c-dot"></div>
     <div id="c-ring"></div>
 
-    <!-- ═══════════════════════════════════════════════════
-     PRELOADER — ringan: foto kecil + persentase, hilang begitu
-     foto utama selesai dimuat (atau maksimal 3.5s biar ga ngegantung)
-═══════════════════════════════════════════════════ -->
     <div id="preloader">
       <div class="preloader-frame" id="preloader-frame">
         <img id="preloader-img" src="" alt="" />
@@ -294,14 +374,10 @@
       >
     </div>
 
-    <!-- ═══════════════════════════════════════════════════
-     ENVELOPE SCREEN
-═══════════════════════════════════════════════════ -->
     <div
       id="envelope-screen"
       class="fixed inset-0 z-[5000] bg-bg flex flex-col items-center justify-center overflow-hidden"
     >
-      <!-- vignette -->
       <div
         class="absolute inset-0 pointer-events-none"
         style="
@@ -313,7 +389,6 @@
         "
       ></div>
 
-      <!-- diagonal grid texture -->
       <div
         class="absolute inset-0 pointer-events-none opacity-[0.04]"
         style="
@@ -328,13 +403,11 @@
         "
       ></div>
 
-      <!-- Card -->
       <div
         id="env-card"
         onclick="openInvitation()"
         class="relative w-[min(440px,90vw)] bg-[#1F1B14] border border-gold/30 px-10 md:px-12 py-14 text-center cursor-pointer overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,.6)] group"
       >
-        <!-- envelope SVG flap illusion -->
         <div class="absolute inset-0 pointer-events-none">
           <svg
             class="absolute top-0 left-0 w-full h-[38%]"
@@ -362,7 +435,6 @@
           </svg>
         </div>
 
-        <!-- corner ornaments -->
         <div
           class="absolute top-4 left-4 w-9 h-9 border-t border-l border-gold/40"
         ></div>
@@ -377,7 +449,6 @@
         ></div>
 
         <div class="relative z-10 flex flex-col items-center">
-          <!-- wax seal -->
           <div
             class="w-[60px] h-[60px] rounded-full flex items-center justify-center mb-8 font-display text-lg text-white/60 shrink-0 group-hover:scale-105 transition-transform duration-500 shadow-[0_4px_24px_rgba(139,26,26,.4),inset_0_1px_0_rgba(255,255,255,.15)]"
             style="
@@ -402,12 +473,11 @@
           >
             Dinda
             <em class="block my-1 text-[.55em] text-gold-lt font-serif italic"
-              >&amp;</em
+              >&</em
             >
             Ashel
           </h1>
 
-          <!-- rule with diamond -->
           <div class="flex items-center gap-3 w-full my-5 opacity-60">
             <span class="flex-1 h-px bg-ink/20"></span>
             <i data-lucide="diamond" class="w-2.5 h-2.5 text-gold"></i>
@@ -417,10 +487,9 @@
           <p
             class="font-sans text-[9px] tracking-[.25em] uppercase text-ink/45 mb-8"
           >
-            Minggu, 05 Juli 2026 &nbsp;·&nbsp; Bogor
+            Minggu, 05 Juli 2026 · Bogor
           </p>
 
-          <!-- Kepada Yth — diisi JS dari query param ?k=, default tersembunyi -->
           <div id="env-guest-block" class="mb-8 hidden">
             <span
               class="font-sans text-[9px] tracking-[.2em] uppercase text-ink/40 block mb-2"
@@ -450,11 +519,7 @@
       </p>
     </div>
 
-    <!-- ═══════════════════════════════════════════════════
-     MAIN CONTENT
-═══════════════════════════════════════════════════ -->
     <div id="main-content" class="invisible opacity-0">
-      <!-- MUSIC -->
       <audio
         id="bg-music"
         src="/Lagu/Perfection.mp3"
@@ -465,26 +530,6 @@
         id="music-panel"
         class="fixed bottom-6 right-6 z-[4000] flex items-center gap-3"
       >
-        <!-- slider volume — tersembunyi, muncul ke kiri tombol saat dibuka -->
-        <div
-          id="volume-pop"
-          class="flex items-center gap-2 bg-bg2/80 backdrop-blur-sm border border-gold/30 rounded-full px-4 py-2.5 opacity-0 scale-95 pointer-events-none transition-all duration-200 origin-right"
-        >
-          <i
-            data-lucide="volume-1"
-            class="w-3.5 h-3.5 text-gold/70 shrink-0"
-          ></i>
-          <input
-            id="volume-range"
-            type="range"
-            min="0"
-            max="100"
-            value="60"
-            aria-label="Atur volume musik"
-            class="w-20 sm:w-24 accent-gold cursor-pointer"
-          />
-        </div>
-
         <button
           id="music-toggle"
           type="button"
@@ -492,11 +537,52 @@
           aria-expanded="false"
           class="w-12 h-12 rounded-full border border-gold/40 bg-bg2/70 backdrop-blur-sm flex items-center justify-center text-gold hover:border-gold hover:text-gold-lt transition-colors duration-300 shrink-0"
         >
-          <i data-lucide="disc-3" id="music-icon" class="w-5 h-5"></i>
+          <!--
+            CATATAN PENTING soal icon musik ini:
+            Tombol ini SENGAJA tidak memakai <i data-lucide="..."> seperti
+            ikon lain di halaman. Lucide.createIcons() mengganti <i> jadi
+            <svg> SEKALI saja -- begitu sudah jadi <svg>, mengubah atribut
+            data-lucide dan memanggil createIcons() lagi TIDAK akan
+            menggambar ulang isi svg tersebut (createIcons cuma menyasar
+            elemen <i> yang belum diproses). Itu sebabnya sebelumnya ikon
+            musik kelihatan "tidak pernah berubah" walau diklik berkali-kali.
+
+            Solusinya: dua ikon SVG manual (volume-on / volume-off) yang
+            sudah jadi <svg> dari awal, lalu kita TOGGLE class hidden di
+            antara keduanya. Tidak bergantung sama sekali pada proses
+            render ulang library eksternal -- jadi dijamin selalu sinkron.
+          -->
+          <svg
+            id="music-icon-on"
+            class="w-5 h-5 hidden"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+          </svg>
+          <svg
+            id="music-icon-off"
+            class="w-5 h-5"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <line x1="22" y1="9" x2="16" y2="15"></line>
+            <line x1="16" y1="9" x2="22" y2="15"></line>
+          </svg>
         </button>
       </div>
 
-      <!-- NAV -->
       <nav
         class="fixed top-0 left-0 w-full z-50 px-6 md:px-10 py-6 flex justify-between items-center pointer-events-none"
         style="mix-blend-mode: difference"
@@ -509,20 +595,17 @@
         <span
           id="nav-to-top"
           class="nav-word font-display text-[9px] tracking-[.3em] uppercase text-ink opacity-0 pointer-events-auto cursor-pointer"
-          >Dinda &amp; Ashel</span
+          >Dinda & Ashel</span
         >
       </nav>
 
-      <!-- ─── HERO ────────────────────────────────────────────────────────────── -->
       <section id="hero" class="relative h-svh overflow-hidden">
-        <!-- 1 foto saja, dengan slow-zoom halus -->
         <div
           class="hero-slide"
           id="slide-0"
-          data-src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08055.webp"
+          data-src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08054 (11).webp"
         ></div>
 
-        <!-- gradient overlay — dark top + dark bottom, lighter mid so face shows -->
         <div
           class="absolute inset-0 z-[1]"
           style="
@@ -536,7 +619,6 @@
           "
         ></div>
 
-        <!-- year watermark -->
         <div
           class="absolute inset-x-0 bottom-0 z-[2] flex items-end justify-center pointer-events-none select-none overflow-hidden leading-none"
           style="height: 55%"
@@ -552,42 +634,37 @@
           >
         </div>
 
-        <!-- hero text -->
         <div
           class="absolute inset-0 z-[3] flex flex-col items-center justify-center text-center px-6 pt-10"
         >
-          <!-- "Dear, [nama tamu]" — diisi JS dari query param ?k= , fallback "Dear," polos -->
           <span
             id="hero-greeting"
-            class="hero-stagger font-serif italic text-ink/70 mb-3 block opacity-0"
+            class="hero-stagger font-serif italic text-ink/70 mb-3 block"
             style="font-size: clamp(1rem, 2.5vw, 1.3rem)"
             >Dear,</span
           >
 
-          <!-- BIG NAME — dua baris, supaya di HP sekecil apapun tidak overflow -->
           <h1
-            class="hero-stagger font-serif font-light leading-[0.95] text-ink opacity-0 drop-shadow-md"
+            class="hero-stagger font-serif font-light leading-[0.95] text-ink drop-shadow-md"
             style="font-size: clamp(3rem, 15vw, 11rem); letter-spacing: -0.02em"
           >
             <span class="block">Dinda</span>
-            <span class="block"
-              ><span
-                class="font-serif italic text-gold"
-                style="font-size: 0.5em; padding: 0 0.12em"
-                >&amp;</span
-              >Ashel</span
+            <span
+              class="block font-serif italic text-gold"
+              style="font-size: 0.5em; padding: 0 0.12em"
+              >&</span
             >
+            <span class="">Ashel</span>
           </h1>
 
-          <!-- sub copy -->
           <p
-            class="hero-stagger font-sans text-ink/60 mt-5 mb-2 opacity-0 leading-relaxed"
+            class="hero-stagger font-sans text-ink/60 mt-5 mb-2 leading-relaxed"
             style="font-size: clamp(0.75rem, 1.5vw, 0.9rem); max-width: 420px"
           >
             Mengundang Anda untuk hadir di pernikahan kami pada
           </p>
           <p
-            class="hero-stagger font-display uppercase tracking-[.25em] text-gold-lt font-semibold opacity-0"
+            class="hero-stagger font-display uppercase tracking-[.25em] text-gold-lt font-semibold"
             style="
               font-size: clamp(0.95rem, 1.8vw, 1.25rem);
               text-shadow:
@@ -599,9 +676,8 @@
             Minggu, 05 Juli 2026
           </p>
 
-          <!-- tagline -->
           <span
-            class="hero-stagger font-serif italic text-ink/40 mt-6 block opacity-0"
+            class="hero-stagger font-serif italic text-ink/40 mt-6 block"
             style="
               font-size: clamp(0.85rem, 2vw, 1.1rem);
               letter-spacing: 0.04em;
@@ -610,31 +686,16 @@
             Awalnya cuma kenalan…
           </span>
         </div>
-
-        <!-- scroll hint -->
-        <div
-          class="hero-scroll-hint absolute bottom-10 left-1/2 -translate-x-1/2 z-[3] flex flex-col items-center gap-2.5 opacity-0"
-        >
-          <span
-            class="font-display text-[8px] tracking-[.3em] uppercase text-ink/30"
-            >Scroll</span
-          >
-          <div
-            class="scroll-line w-px h-12 bg-gradient-to-b from-gold to-transparent"
-          ></div>
-        </div>
       </section>
 
-      <!-- ─── QURAN ─────────────────────────────────────────────────────────── -->
       <section
         class="relative py-28 md:py-36 px-[5vw] bg-bg2 text-center border-t border-b border-divider overflow-hidden"
       >
-        <!-- big decorative quote mark -->
         <div
           class="absolute top-[-30px] left-[5vw] font-serif italic text-gold/[.03] pointer-events-none select-none leading-none"
           style="font-size: 400px"
         >
-          &ldquo;
+          "
         </div>
 
         <div class="reveal max-w-3xl mx-auto relative">
@@ -662,57 +723,80 @@
         </div>
       </section>
 
-      <!-- ─── STORY (Kisah Kami) ────────────────────────────────────────────── -->
       <section
         id="kisah-kami"
-        class="relative py-[160px] md:py-[200px] px-[5vw] overflow-hidden bg-bg border-b border-divider"
+        class="relative py-[120px] md:py-0 px-[5vw] overflow-hidden bg-bg border-b border-divider"
       >
+        <!--
+          STRUKTUR BARU "Kisah Kami" — discroll dengan section di-pin
+          (desktop), 4 foto bergantian (crossfade) mengikuti progres
+          scroll, masing-masing dipasangkan dengan satu blok teks cerita.
+          Di mobile, pin dimatikan (supaya tidak terasa "nyangkut" di HP
+          kecil) dan tiap blok teks+foto reveal biasa saat discroll lewat.
+
+          data-story-index pada setiap foto & teks dipakai JS untuk
+          memasangkan foto ke-N dengan teks ke-N secara presisi, tanpa
+          mengandalkan urutan DOM semata.
+        -->
         <div
-          class="relative w-full max-w-[1200px] mx-auto min-h-[900px] flex items-center justify-center"
+          id="kisah-kami-pin"
+          class="relative w-full max-w-[1200px] mx-auto min-h-[100svh] md:min-h-screen flex items-center justify-center py-20 md:py-0"
         >
-          <div class="absolute inset-0 pointer-events-none z-0">
+          <div
+            class="absolute inset-0 flex items-center justify-center pointer-events-none z-0 px-[5vw]"
+          >
             <div
-              class="story-card absolute top-[5%] left-[0%] md:left-[5%] w-[45vw] md:w-[22vw] aspect-[3/4] overflow-hidden opacity-60 grayscale border border-white/5"
+              class="story-photo-stack relative w-full max-w-[360px] md:max-w-[400px] aspect-[4/5] md:ml-auto md:mr-[6vw]"
             >
-              <img
-                src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08054-1.webp"
-                class="w-full h-full object-cover opacity-15"
-                alt="Kisah 1"
-              />
-            </div>
-            <div
-              class="story-card absolute top-[28%] right-[0%] md:right-[5%] w-[50vw] md:w-[26vw] aspect-[3/4] overflow-hidden opacity-60 grayscale border border-white/5"
-            >
-              <img
-                src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08057.webp"
-                class="w-full h-full object-cover opacity-15"
-                alt="Kisah 2"
-              />
-            </div>
-            <div
-              class="story-card absolute top-[55%] left-[5%] md:left-[10%] w-[48vw] md:w-[25vw] aspect-[3/4] overflow-hidden opacity-60 grayscale border border-white/5"
-            >
-              <img
-                src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08059.webp"
-                class="w-full h-full object-cover opacity-15"
-                alt="Kisah 3"
-              />
-            </div>
-            <div
-              class="story-card absolute top-[75%] right-[5%] md:right-[15%] w-[55vw] md:w-[28vw] aspect-[3/4] overflow-hidden opacity-60 grayscale border border-white/5"
-            >
-              <img
-                src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08062.webp"
-                class="w-full h-full object-cover opacity-15"
-                alt="Kisah 4"
-              />
+              <div
+                class="story-photo overflow-hidden grayscale border border-white/10 rounded-sm"
+                data-story-index="0"
+              >
+                <img
+                  data-src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08054-1.webp"
+                  class="lazy-fade w-full h-full object-cover"
+                  alt="Kisah 1"
+                />
+              </div>
+              <div
+                class="story-photo overflow-hidden grayscale border border-white/10 rounded-sm"
+                data-story-index="1"
+              >
+                <img
+                  data-src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08057.webp"
+                  class="lazy-fade w-full h-full object-cover"
+                  alt="Kisah 2"
+                />
+              </div>
+              <div
+                class="story-photo overflow-hidden grayscale border border-white/10 rounded-sm"
+                data-story-index="2"
+              >
+                <img
+                  data-src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08059.webp"
+                  class="lazy-fade w-full h-full object-cover"
+                  alt="Kisah 3"
+                />
+              </div>
+              <div
+                class="story-photo overflow-hidden grayscale border border-white/10 rounded-sm"
+                data-story-index="3"
+              >
+                <img
+                  data-src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08062.webp"
+                  class="lazy-fade w-full h-full object-cover"
+                  alt="Kisah 4"
+                />
+              </div>
             </div>
           </div>
 
           <div
-            class="relative z-10 w-full max-w-2xl px-2 md:px-0 drop-shadow-2xl flex flex-col justify-center"
+            class="relative z-10 w-full max-w-2xl px-2 md:px-0 md:mr-auto md:ml-0 drop-shadow-2xl flex flex-col justify-center"
           >
-            <div class="story-text-line flex items-center gap-3 mb-8">
+            <div
+              class="story-text-line story-intro flex items-center gap-3 mb-8"
+            >
               <div class="w-1.5 h-1.5 bg-ink"></div>
               <span
                 class="font-display text-[9px] tracking-[.35em] uppercase text-gold"
@@ -720,9 +804,8 @@
               >
               <div class="w-6 h-6 border border-ink/30 rounded-full ml-1"></div>
             </div>
-
             <h2
-              class="story-text-line font-serif font-light text-ink leading-snug mb-10 text-left"
+              class="story-text-line story-intro font-serif font-light text-ink leading-snug mb-10 text-left"
               style="font-size: clamp(2rem, 4vw, 3.2rem)"
             >
               Dari satu nama yang disebut,<br />
@@ -730,45 +813,47 @@
               dibangun.
             </h2>
 
-            <p
-              class="story-text-line font-sans text-ink/60 leading-relaxed text-[0.85rem] mb-6 text-left max-w-[95%]"
-            >
-              Awalnya cuma nama yang lewat di obrolan teman —
-              <em class="italic">"dia orangnya baik, loh"</em>.<br />
-              Satu pesan singkat, dibalas dua jam kemudian. Lalu janji ngopi
-              yang berakhir<br />
-              saat lampu kedai dimatikan.
-            </p>
-
-            <blockquote
-              class="story-text-line font-serif italic text-ink/90 text-[1.1rem] leading-relaxed border-l-2 border-gold pl-6 mb-6 text-left max-w-[95%]"
-            >
-              mereka yang mempertemukan kami. Tapi Allah yang<br />
-              menautkan hati kami.
-            </blockquote>
-
-            <p
-              class="story-text-line font-sans text-ink/60 leading-relaxed text-[0.85rem] mb-8 text-left max-w-[95%]"
-            >
-              Dua tahun penuh warna. Ada pertengkaran kecil yang berakhir dengan
-              tawa,<br />
-              ada jarak yang justru membuat kami semakin yakin. Jodoh itu tidak
-              datang<br />
-              dengan riuh — dia datang pelan, tapi pasti. Seperti fajar.
-            </p>
-
-            <p
-              class="story-text-line font-sans italic text-gold/80 text-[0.85rem] text-left"
-            >
-              Terima kasih sudah mau dikenalkan. Terima kasih sudah bertahan.
-              Terima kasih<br />
-              sudah memilih untuk menjadi imam dalam hidupku.
-            </p>
+            <div class="story-block-wrap">
+              <p
+                class="story-block font-sans text-ink/60 leading-relaxed text-[0.85rem] text-left max-w-[95%]"
+                data-story-index="0"
+              >
+                Awalnya cuma nama yang lewat di obrolan teman —
+                <em class="italic">"dia orangnya baik, loh"</em>.<br />
+                Satu pesan singkat, dibalas dua jam kemudian. Lalu janji ngopi
+                yang berakhir<br />
+                saat lampu kedai dimatikan.
+              </p>
+              <blockquote
+                class="story-block font-serif italic text-ink/90 text-[1.1rem] leading-relaxed border-l-2 border-gold pl-6 text-left max-w-[95%]"
+                data-story-index="1"
+              >
+                Mereka yang mempertemukan kami.<br />
+                Tapi Allah yang menautkan hati kami.
+              </blockquote>
+              <p
+                class="story-block font-sans text-ink/60 leading-relaxed text-[0.85rem] text-left max-w-[95%]"
+                data-story-index="2"
+              >
+                Dua tahun penuh warna. Ada pertengkaran kecil yang berakhir
+                dengan tawa,<br />
+                ada jarak yang justru membuat kami semakin yakin. Jodoh itu
+                tidak datang<br />
+                dengan riuh — dia datang pelan, tapi pasti. Seperti fajar.
+              </p>
+              <p
+                class="story-block font-sans italic text-gold/80 text-[0.85rem] text-left"
+                data-story-index="3"
+              >
+                Terima kasih sudah mau dikenalkan. Terima kasih sudah bertahan.
+                Terima kasih<br />
+                sudah memilih untuk menjadi imam dalam hidupku.
+              </p>
+            </div>
           </div>
         </div>
       </section>
 
-      <!-- ─── MEMPELAI ──────────────────────────────────────────────────────── -->
       <section class="py-28 md:py-36 px-[5vw] bg-bg2 border-t border-divider">
         <div class="text-center mb-16 reveal">
           <h2
@@ -804,7 +889,7 @@
               Dinda Parawansa
             </div>
             <p class="font-sans text-[.72rem] text-ink/35 leading-relaxed">
-              Putri dari Bpk. &amp; Ibu Parawansa
+              Putri Ketiga dari Bpk. Rudi Ependi (Alm) & Ibu Pipih Sopiah (Almh)
             </p>
           </div>
           <div class="relative text-center px-10 py-12">
@@ -819,16 +904,15 @@
               class="font-serif font-light text-ink mb-1.5"
               style="font-size: clamp(1.5rem, 3vw, 2rem)"
             >
-              SH. Achmad Faisal
+              Achmad Faisal S.H
             </div>
             <p class="font-sans text-[.72rem] text-ink/35 leading-relaxed">
-              Putra dari Bpk. &amp; Ibu Faisal
+              Putra Kedua dari Bpk. Hj Ahmad Kosasih & Ibu Neng Tini
             </p>
           </div>
         </div>
       </section>
 
-      <!-- ─── GALLERY (bento) ───────────────────────────────────────────────── -->
       <section class="py-28 md:py-36 px-[5vw] bg-bg2 border-t border-divider">
         <div class="text-center mb-14 reveal">
           <span
@@ -844,20 +928,19 @@
         </div>
 
         <div
-          class="reveal grid grid-cols-2 md:grid-cols-4 grid-flow-row-dense gap-3 auto-rows-[130px] md:auto-rows-[170px] max-w-[1100px] mx-auto"
+          class="grid grid-cols-2 md:grid-cols-4 grid-flow-row-dense gap-3 auto-rows-[130px] md:auto-rows-[170px] max-w-[1100px] mx-auto"
           id="gallery-grid"
         >
           <button
             type="button"
             class="gallery-item relative col-span-2 row-span-2 overflow-hidden rounded-sm group"
-            data-full="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08054%20%2810%29.webp"
+            data-full="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08062.webp"
           >
             <img
-              src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08054%20%2810%29.webp"
+              data-src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08062.webp"
               alt="Dinda & Ashel"
-              loading="lazy"
               decoding="async"
-              class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              class="lazy-fade w-full h-full object-cover object-[50%_85%] transition-transform duration-500 group-hover:scale-105"
               onerror="
                 this.closest('.gallery-item').style.background = '#16130F'
               "
@@ -869,11 +952,10 @@
             data-full="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08057.webp"
           >
             <img
-              src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08057.webp"
+              data-src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08057.webp"
               alt="Dinda & Ashel"
-              loading="lazy"
               decoding="async"
-              class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              class="lazy-fade w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               onerror="
                 this.closest('.gallery-item').style.background = '#16130F'
               "
@@ -885,11 +967,10 @@
             data-full="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08059%20%281%29.webp"
           >
             <img
-              src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08059%20%281%29.webp"
+              data-src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08059%20%281%29.webp"
               alt="Dinda & Ashel"
-              loading="lazy"
               decoding="async"
-              class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              class="lazy-fade w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               onerror="
                 this.closest('.gallery-item').style.background = '#16130F'
               "
@@ -901,11 +982,10 @@
             data-full="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08054%20%2811%29.webp"
           >
             <img
-              src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08054%20%2811%29.webp"
+              data-src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08054%20%2811%29.webp"
               alt="Dinda & Ashel"
-              loading="lazy"
               decoding="async"
-              class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              class="lazy-fade w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               onerror="
                 this.closest('.gallery-item').style.background = '#16130F'
               "
@@ -917,11 +997,10 @@
             data-full="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08060.webp"
           >
             <img
-              src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08060.webp"
+              data-src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08060.webp"
               alt="Dinda & Ashel"
-              loading="lazy"
               decoding="async"
-              class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              class="lazy-fade w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               onerror="
                 this.closest('.gallery-item').style.background = '#16130F'
               "
@@ -933,11 +1012,10 @@
             data-full="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08058.webp"
           >
             <img
-              src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08058.webp"
+              data-src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08058.webp"
               alt="Dinda & Ashel"
-              loading="lazy"
               decoding="async"
-              class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              class="lazy-fade w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               onerror="
                 this.closest('.gallery-item').style.background = '#16130F'
               "
@@ -949,11 +1027,10 @@
             data-full="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08054%20%2812%29.webp"
           >
             <img
-              src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08054%20%2812%29.webp"
+              data-src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08054%20%2812%29.webp"
               alt="Dinda & Ashel"
-              loading="lazy"
               decoding="async"
-              class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              class="lazy-fade w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               onerror="
                 this.closest('.gallery-item').style.background = '#16130F'
               "
@@ -965,11 +1042,10 @@
             data-full="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08056.webp"
           >
             <img
-              src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08056.webp"
+              data-src="/Foto/Foto-Request-Client/preview/AhaConvert_GNT08056.webp"
               alt="Dinda & Ashel"
-              loading="lazy"
               decoding="async"
-              class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              class="lazy-fade w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               onerror="
                 this.closest('.gallery-item').style.background = '#16130F'
               "
@@ -978,7 +1054,6 @@
         </div>
       </section>
 
-      <!-- Lightbox galeri — overlay simpel, tanpa library tambahan -->
       <div
         id="lightbox"
         class="fixed inset-0 z-[5500] bg-black/90 hidden items-center justify-center p-6 cursor-zoom-out"
@@ -999,9 +1074,7 @@
         </button>
       </div>
 
-      <!-- ─── EVENTS ────────────────────────────────────────────────────────── -->
       <section id="acara" class="relative py-32 md:py-40 px-[5vw]">
-        <!-- watermark -->
         <div
           class="absolute inset-x-0 top-16 text-center pointer-events-none select-none"
         >
@@ -1057,8 +1130,8 @@
                 class="w-3 h-3 mt-0.5 shrink-0 text-gold/60"
               ></i>
               <span
-                >Jl. [Nama Jalan] No. [00], RT/RW [00/00], Kel. [Kelurahan],
-                Kec. [Kecamatan], Bogor</span
+                >Jl. Jagung Ujung, Ciheuleut, RT. 001 RW. 009, Kel.
+                Baranangsiang, Kec. Bogor Timur, Kota Bogor</span
               >
             </div>
           </div>
@@ -1069,7 +1142,7 @@
               >05</span
             >
             <h3 class="font-serif font-light text-ink text-2xl mb-1">
-              Akad &amp; Resepsi
+              Akad & Resepsi
             </h3>
             <span
               class="font-display text-[8px] tracking-[.3em] uppercase text-ink/35 mb-7 block"
@@ -1093,15 +1166,14 @@
                 class="w-3 h-3 mt-0.5 shrink-0 text-gold/60"
               ></i>
               <span
-                >Jl. [Nama Jalan] No. [00], RT/RW [00/00], Kel. [Kelurahan],
-                Kec. [Kecamatan], Bogor</span
+                >Jl. KH Halimi, Cipelang, RT. 001 RW. 006, Desa. Cipelang, Kec.
+                Cijeruk, Kab Bogor</span
               >
             </div>
           </div>
         </div>
       </section>
 
-      <!-- ─── COUNTDOWN ─────────────────────────────────────────────────────── -->
       <section
         class="py-24 px-[5vw] bg-bg2 border-t border-b border-divider text-center"
       >
@@ -1161,7 +1233,6 @@
         </div>
       </section>
 
-      <!-- ─── MAP ───────────────────────────────────────────────────────────── -->
       <section class="py-28 md:py-36 px-[5vw]">
         <div
           class="grid grid-cols-1 lg:grid-cols-[1fr_1.6fr] gap-12 md:gap-20 items-center max-w-[1300px] mx-auto"
@@ -1197,8 +1268,8 @@
             class="reveal relative overflow-hidden rounded-sm h-[420px] md:h-[460px]"
           >
             <iframe
-              src="https://www.google.com/maps/embed?pb=!1m17!1m12!1m3!1d3952.5548525720014!2d106.8000466370351!3d-6.6985951452290315!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m2!1m1!2zNsKwNDEnNTQuOCJTIDEwNsKwNDgnMDAuMiJF!5e1!3m2!1sen!2sid!4v1781724132598!5m2!1sen!2sid"
-              class="w-full h-full border-0 transition-all duration-700 md:grayscale md:contrast-110 md:brightness-90 hover:md:grayscale-0 hover:md:contrast-100 hover:md:brightness-100"
+              data-src="https://www.google.com/maps/embed?pb=!1m17!1m12!1m3!1d3952.5548525720014!2d106.8000466370351!3d-6.6985951452290315!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m2!1m1!2zNsKwNDEnNTQuOCJTIDEwNsKwNDgnMDAuMiJF!5e1!3m2!1sen!2sid!4v1781724132598!5m2!1sen!2sid"
+              class="map-iframe w-full h-full border-0 transition-all duration-700 md:grayscale md:contrast-110 md:brightness-90 hover:md:grayscale-0 hover:md:contrast-100 hover:md:brightness-100"
               loading="lazy"
               referrerpolicy="no-referrer-when-downgrade"
               allowfullscreen
@@ -1211,7 +1282,6 @@
         </div>
       </section>
 
-      <!-- ─── GIFT ──────────────────────────────────────────────────────────── -->
       <section
         class="py-28 md:py-36 px-[5vw] bg-bg2 border-t border-divider text-center"
       >
@@ -1219,7 +1289,7 @@
           class="reveal font-serif font-light text-ink mb-3"
           style="font-size: clamp(2rem, 4vw, 2.6rem)"
         >
-          Hadiah &amp; Kasih
+          Hadiah & Kasih
         </h2>
         <p
           class="reveal font-sans text-ink/45 max-w-md mx-auto mb-16 leading-[1.7]"
@@ -1232,7 +1302,6 @@
         <div
           class="reveal flex flex-wrap justify-center gap-6 max-w-[820px] mx-auto"
         >
-          <!-- SeaBank -->
           <div
             class="bank-card relative text-left overflow-hidden w-full max-w-[380px] rounded-[20px] p-7 flex flex-col justify-between"
             style="
@@ -1247,7 +1316,6 @@
               box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
             "
           >
-            <!-- sheen halus -->
             <div
               class="absolute inset-0 pointer-events-none opacity-40"
               style="
@@ -1265,7 +1333,6 @@
                 >SeaBank</span
               >
               <div class="flex items-center gap-2.5">
-                <!-- chip -->
                 <span
                   class="block w-7 h-5 rounded-[3px] border border-gold/50"
                   style="
@@ -1309,7 +1376,6 @@
             </div>
           </div>
 
-          <!-- BNI -->
           <div
             class="bank-card relative text-left overflow-hidden w-full max-w-[380px] rounded-[20px] p-7 flex flex-col justify-between"
             style="
@@ -1324,7 +1390,6 @@
               box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
             "
           >
-            <!-- sheen halus -->
             <div
               class="absolute inset-0 pointer-events-none opacity-40"
               style="
@@ -1342,7 +1407,6 @@
                 >BNI</span
               >
               <div class="flex items-center gap-2.5">
-                <!-- chip -->
                 <span
                   class="block w-7 h-5 rounded-[3px] border border-gold/50"
                   style="
@@ -1388,14 +1452,13 @@
         </div>
       </section>
 
-      <!-- ─── WISHES ────────────────────────────────────────────────────────── -->
       <section class="py-28 md:py-36 px-[5vw]">
         <div class="max-w-[720px] mx-auto">
           <h2
             class="reveal font-serif font-light text-ink text-center mb-14"
             style="font-size: clamp(2rem, 4vw, 2.6rem)"
           >
-            Doa &amp; Ucapan
+            Doa & Ucapan
           </h2>
 
           <form class="reveal mb-16" onsubmit="submitWish(event)">
@@ -1439,7 +1502,6 @@
         </div>
       </section>
 
-      <!-- ─── FOOTER ────────────────────────────────────────────────────────── -->
       <footer class="py-16 px-[5vw] bg-bg2 border-t border-divider text-center">
         <span
           class="font-display text-[8px] tracking-[.3em] uppercase text-gold/70 mb-5 block"
@@ -1449,27 +1511,22 @@
           class="font-serif font-light text-ink mb-6"
           style="font-size: clamp(1.5rem, 4vw, 2.2rem)"
         >
-          Dinda<span class="font-serif italic text-gold px-1">&amp;</span>Ashel
+          Dinda<span class="font-serif italic text-gold px-1">&</span>Ashel
         </div>
         <div
           class="flex flex-col sm:flex-row justify-center items-center gap-3 sm:gap-10 font-sans text-[.7rem] text-ink/35 leading-relaxed mb-8"
         >
-          <span>Putri dari Bpk. &amp; Ibu Parawansa</span>
+          <span>Putri dari Bpk. & Ibu Parawansa</span>
           <span class="hidden sm:inline text-gold/40">•</span>
-          <span>Putra dari Bpk. &amp; Ibu Faisal</span>
+          <span>Putra dari Bpk. & Ibu Faisal</span>
         </div>
         <p
           class="font-sans text-[.68rem] tracking-[.15em] uppercase text-ink/20"
         >
-          © 2026 &nbsp;·&nbsp; Semoga Allah meridhoi perjalanan kami
+          © 2026 · Semoga Allah meridhoi perjalanan kami
         </p>
       </footer>
     </div>
-    <!-- /main-content -->
-
-    <!-- ═══════════════════════════════════════════════════
-     SCRIPTS
-═══════════════════════════════════════════════════ -->
     <script
       defer
       src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"
@@ -1503,9 +1560,9 @@
       }
       function escHtml(s) {
         return String(s)
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;");
+          .replace(/&/g, "&")
+          .replace(/</g, "<")
+          .replace(/>/g, ">");
       }
 
       // ── PERSONALISASI NAMA TAMU (?k=) ───────────────────────
@@ -1526,12 +1583,23 @@
       }
 
       function getGuestName() {
-        const raw = new URLSearchParams(window.location.search).get("k");
-        if (!raw) return null;
+        // Ambil string raw setelah '?k=' supaya '&' tetap terbaca utuh jika tidak di-encode di URL
+        const searchStr = window.location.search;
+        const match = searchStr.match(/[?&]k=([^#]*)/);
+        if (!match) return null;
+
+        let raw = decodeURIComponent(match[1]);
+
+        // Ganti dash, underscore, plus dengan spasi
         let name = raw.replace(/[-_+]/g, " ").trim();
+        // Ubah & menjadi " & " supaya "Adli&Partner" → "Adli & Partner"
+        name = name
+          .replace(/&/g, " & ")
+          .replace(/\s{2,}/g, " ")
+          .trim();
+
         if (!name) return null;
         if (name.length > 60) name = name.slice(0, 60);
-        name = formatGuestName(name);
         return name;
       }
 
@@ -1564,7 +1632,7 @@
           .map((part) =>
             part.trim() === ""
               ? part
-              : `<span class="split-word inline-block" style="opacity:0;transform:translateY(10px)">${escHtml(part)}</span>`,
+              : `<span class="split-word inline-block">${escHtml(part)}</span>`,
           )
           .join("");
       }
@@ -1707,7 +1775,9 @@
       // Preload foto-foto hero secara nyata (bukan cuma efek visual):
       // background-image baru dipasang ke elemen hero SETELAH file-nya
       // benar-benar sukses dimuat. Jadi tidak ada "foto kosong" yang
-      // kelihatan sekilas saat envelope dibuka.
+      // kelihatan sekilas saat envelope dibuka. Preloader juga menunggu
+      // web font (Cormorant/Cinzel) siap supaya tidak ada reflow teks
+      // yang kelihatan "loncat" tepat sesudah envelope terbuka.
       function initPreloader() {
         const pre = document.getElementById("preloader");
         const frame = document.getElementById("preloader-frame");
@@ -1718,8 +1788,15 @@
         const heroSlides = Array.from(document.querySelectorAll(".hero-slide"));
         const sources = heroSlides.map((s) => s.dataset.src).filter(Boolean);
 
-        const total = sources.length || 1;
-        let loaded = 0;
+        const fontsReady =
+          document.fonts && document.fonts.ready
+            ? document.fonts.ready
+            : Promise.resolve();
+
+        // total unit progres = jumlah foto + 1 unit untuk font loading,
+        // supaya progress bar tidak "lompat" dari 90% ke 100% secara tiba-tiba
+        const totalUnits = (sources.length || 1) + 1;
+        let doneUnits = 0;
         const startedAt = performance.now();
         const MIN_SHOW = 500; // ms — biar ga "kedip" kalau semua sudah cached
         const MAX_WAIT = 3500; // ms — jaga-jaga kalau koneksi lambat/gambar gagal
@@ -1727,11 +1804,16 @@
         function setPct(p) {
           if (pctEl) pctEl.textContent = Math.round(p) + "%";
         }
+        function bumpUnit() {
+          doneUnits++;
+          setPct((doneUnits / totalUnits) * 100);
+        }
 
         let finished = false;
         function finish() {
           if (finished) return;
           finished = true;
+          setPct(100);
           const elapsed = performance.now() - startedAt;
           const wait = Math.max(0, MIN_SHOW - elapsed);
           setTimeout(() => {
@@ -1742,17 +1824,19 @@
           }, wait);
         }
 
+        fontsReady.then(bumpUnit).catch(bumpUnit);
+
         if (!sources.length) {
-          setPct(100);
           finish();
           return;
         }
 
+        let loaded = 0;
         sources.forEach((src, i) => {
           const im = new Image();
           im.onload = () => {
             loaded++;
-            setPct((loaded / total) * 100);
+            bumpUnit();
             if (heroSlides[i]) {
               heroSlides[i].style.backgroundImage = `url("${src}")`;
             }
@@ -1760,14 +1844,18 @@
               imgEl.src = src;
               imgEl.classList.add("is-loaded");
             }
-            if (loaded >= total) finish();
+            if (loaded >= sources.length) {
+              fontsReady.then(finish).catch(finish);
+            }
           };
           im.onerror = () => {
             // gambar gagal dimuat: biarkan slide pakai warna gelap bawaan
             // (tidak ditampilkan rusak), tetap hitung progres supaya lanjut.
             loaded++;
-            setPct((loaded / total) * 100);
-            if (loaded >= total) finish();
+            bumpUnit();
+            if (loaded >= sources.length) {
+              fontsReady.then(finish).catch(finish);
+            }
           };
           im.src = src;
         });
@@ -1825,63 +1913,64 @@
       }
 
       // ── MUSIC ───────────────────────────────────────────────
+      // State ikon diatur dari SATU sumber kebenaran: status play/pause
+      // audio yang sebenarnya (lewat event 'play'/'pause'), bukan ditebak
+      // dari klik tombol. Ini supaya ikon selalu sinkron walau:
+      //  - autoplay diblokir browser (klik "Buka Undangan" gagal mainkan musik)
+      //  - musik berhenti karena alasan lain (network error, dsb)
+      // Klik tombol HANYA memerintahkan audio play()/pause(); ikon
+      // mengikuti lewat event listener, sehingga tidak pernah "lompat"
+      // ke state yang salah.
       function initMusic() {
         const audio = document.getElementById("bg-music");
         const btn = document.getElementById("music-toggle");
-        const icon = document.getElementById("music-icon");
-        const volumePop = document.getElementById("volume-pop");
-        const volumeRange = document.getElementById("volume-range");
+        const iconOn = document.getElementById("music-icon-on");
+        const iconOff = document.getElementById("music-icon-off");
         if (!audio || !btn) return;
 
-        // Volume tersimpan dari kunjungan sebelumnya (fallback 60%)
-        const VOL_KEY = "df-wedding-volume";
-        let savedVol = parseInt(localStorage.getItem(VOL_KEY), 10);
-        if (isNaN(savedVol) || savedVol < 0 || savedVol > 100) savedVol = 60;
-        audio.volume = savedVol / 100;
-        if (volumeRange) volumeRange.value = String(savedVol);
+        // Kunci volume menjadi 100%
+        audio.volume = 1.0;
 
         function setIcon(playing) {
-          if (icon) {
-            icon.setAttribute("data-lucide", playing ? "pause" : "disc-3");
-            icon.classList.toggle("spinning", playing);
-            ci();
-          }
+          // Toggle dua svg yang sudah jadi, bukan re-render lewat lucide
+          // (lihat komentar di markup tombol musik untuk alasan lengkapnya:
+          // createIcons() tidak menggambar ulang svg yang sudah jadi svg).
+          if (iconOn) iconOn.classList.toggle("hidden", !playing);
+          if (iconOff) iconOff.classList.toggle("hidden", playing);
           btn.setAttribute(
             "aria-label",
             playing ? "Jeda musik" : "Putar musik",
           );
           btn.setAttribute("aria-expanded", playing ? "true" : "false");
-          // Slider volume otomatis muncul selagi musik main, hilang saat jeda
-          if (volumePop) {
-            volumePop.classList.toggle("opacity-0", !playing);
-            volumePop.classList.toggle("scale-95", !playing);
-            volumePop.classList.toggle("pointer-events-none", !playing);
-            volumePop.classList.toggle("opacity-100", playing);
-            volumePop.classList.toggle("scale-100", playing);
-          }
+          btn.classList.toggle("border-gold", playing);
+          btn.classList.toggle("text-gold-lt", playing);
         }
+
+        // Selalu sinkronkan ikon ke status audio yang sebenarnya
+        audio.addEventListener("play", () => setIcon(true));
+        audio.addEventListener("pause", () => setIcon(false));
+        audio.addEventListener("ended", () => setIcon(false)); // safety net, walau loop=true
+        audio.addEventListener("emptied", () => setIcon(false));
+
+        // Set state awal sesuai kondisi nyata elemen audio
+        setIcon(!audio.paused);
 
         btn.addEventListener("click", () => {
           if (audio.paused) {
-            audio.play().catch(() => {});
+            audio.play().catch(() => {
+              // Browser tetap menolak play (butuh gesture baru): ikon
+              // sengaja TIDAK diubah di sini, karena event 'play' yang
+              // jadi penentu — kalau play() gagal, event tidak akan fire,
+              // jadi ikon otomatis tetap konsisten menampilkan "mute".
+            });
           } else {
             audio.pause();
           }
         });
 
-        if (volumeRange) {
-          volumeRange.addEventListener("input", () => {
-            const v = Number(volumeRange.value);
-            audio.volume = v / 100;
-            localStorage.setItem(VOL_KEY, String(v));
-          });
-        }
-
-        audio.addEventListener("play", () => setIcon(true));
-        audio.addEventListener("pause", () => setIcon(false));
-
         // Dipanggil saat user klik "Buka Undangan" — itu gesture asli,
         // jadi browser mengizinkan audio diputar otomatis di momen itu.
+        // Kalau diblokir, ikon otomatis tetap "mute" (lihat di atas).
         window.__tryPlayMusic = () => {
           audio.play().catch(() => {
             // Autoplay diblokir browser: biarkan tombol manual yang memulai.
@@ -1917,12 +2006,31 @@
             null,
             "-=0.1",
           )
-          .call(runSiteIntro, null, "-=0.55");
+          .call(runSiteIntro, null, "-=0.55")
+          .call(
+            () => {
+              // Setelah envelope ditutup secara visual, hapus dari DOM
+              // flow (display:none) supaya tidak diam-diam menyumbang
+              // tinggi/scroll listener yang sudah tidak relevan.
+              env.style.display = "none";
+            },
+            null,
+            "+=0.05",
+          );
       }
 
       // ── SITE INTRO & ANIMATIONS ────────────────────────────
       function runSiteIntro() {
         gsap.registerPlugin(ScrollTrigger, TextPlugin);
+
+        // Mengurangi kesan "patah" saat resize di mobile (address bar
+        // collapse/expand memicu resize event yang tidak relevan dengan
+        // perubahan layout asli).
+        ScrollTrigger.config({ ignoreMobileResize: true });
+        // Default toleransi scroll-trigger sedikit dilonggarkan secara
+        // konsisten di semua section lewat helper revealOnce() di bawah,
+        // supaya jeda antar section terasa serupa (tidak ada yang
+        // "kepagian" / "terlambat" muncul dibanding yang lain.
 
         const prefersReducedMotion = matchMedia(
           "(prefers-reduced-motion: reduce)",
@@ -1932,8 +2040,8 @@
           // Tamu yang minta animasi diminimalkan: tampilkan semua konten
           // langsung tanpa transform/fade, foto tetap diam (tanpa Ken Burns/pin).
           gsap.set(
-            ".nav-word, .hero-stagger, .hero-scroll-hint, .reveal, .story-line",
-            { opacity: 1, y: 0, filter: "none" },
+            ".nav-word, .hero-stagger, .reveal, .story-line, .story-text-line, .gallery-item, .story-bg-card",
+            { opacity: 1, y: 0, x: 0, filter: "none", clearProps: "transform" },
           );
           document.querySelectorAll(".story-photo").forEach((p, i) => {
             p.style.opacity = i === 0 ? "1" : "0";
@@ -1941,83 +2049,115 @@
           document
             .querySelectorAll(".split-heading")
             .forEach((el) => (el.style.opacity = "1"));
-          // Kisah Kami: langsung tampilkan semua foto, tanpa scroll-reveal
           document.querySelectorAll(".story-card").forEach((el) => {
             el.classList.add("is-visible");
           });
+          initLazyMedia(); // gambar tetap lazy-load, cuma tanpa animasi transform
           return;
         }
 
+        // ── INITIAL STATES (satu sumber kebenaran, sebelum animasi jalan) ──
+        gsap.set(".nav-word", { y: -14, opacity: 0 });
+        gsap.set(".hero-stagger", { y: 15, opacity: 0 });
+        gsap.set(".reveal", { y: 20, opacity: 0 });
+        gsap.set(".gallery-item", { y: 20, opacity: 0 });
+        gsap.set(".story-bg-card", { y: 25, opacity: 0 });
+        gsap.set(".story-text-line", { y: 15, opacity: 0 });
+
         // nav
-        gsap.fromTo(
-          ".nav-word",
-          { y: -14, opacity: 0 },
-          {
-            y: 0,
-            opacity: 1,
-            duration: 1.1,
-            stagger: 0.12,
-            ease: "power4.out",
-            delay: 0.15,
-          },
-        );
+        gsap.to(".nav-word", {
+          y: 0,
+          opacity: 1,
+          duration: 1.1,
+          stagger: 0.12,
+          ease: "power4.out",
+          delay: 0.15,
+        });
 
-        // STAGGERED HERO TEXT — translate + opacity saja (tanpa filter:blur)
-        // supaya tidak membebani GPU di HP/laptop low-end. Tetap smooth,
-        // cuma lebih ringan.
-        gsap.fromTo(
-          ".hero-stagger",
-          { y: 24, opacity: 0 },
-          {
-            y: 0,
-            opacity: 1,
-            duration: 1,
-            stagger: 0.13,
-            ease: "power3.out",
-            delay: 0.35,
-          },
-        );
-
-        // scroll hint
-        gsap.fromTo(
-          ".hero-scroll-hint",
-          { opacity: 0, y: 8 },
-          { opacity: 1, y: 0, duration: 1, ease: "power3.out", delay: 1.2 },
-        );
+        // STAGGERED HERO TEXT
+        gsap.to(".hero-stagger", {
+          y: 0,
+          opacity: 1,
+          duration: 1.2,
+          stagger: 0.13,
+          ease: "power3.out",
+          delay: 0.35,
+        });
 
         initKenBurns();
 
-        // STANDARD REVEALS
+        // STANDARD REVEALS — start point disamakan di semua section (top 85%)
+        // supaya jarak "munculnya" konten terhadap posisi scroll konsisten,
+        // tidak ada section yang terasa muncul lebih cepat/lambat dari yang lain.
         document.querySelectorAll(".reveal").forEach((el) => {
-          gsap.fromTo(
-            el,
-            { y: 36, opacity: 0 },
-            {
-              y: 0,
-              opacity: 1,
-              duration: 1.1,
-              ease: "power4.out",
-              scrollTrigger: { trigger: el, start: "top 88%" },
-            },
-          );
-        });
-
-        // SPLIT-TEXT HEADINGS — kata muncul satu-satu, stagger proporsional
-        // (total durasi tetap sama berapa pun jumlah katanya, lewat `amount`)
-        document.querySelectorAll(".split-heading").forEach((el) => {
-          splitWords(el);
-          gsap.to(el.querySelectorAll(".split-word"), {
-            opacity: 1,
+          gsap.to(el, {
             y: 0,
-            duration: 0.7,
+            opacity: 1,
+            duration: 1.1,
             ease: "power3.out",
-            stagger: { amount: 0.5 },
-            scrollTrigger: { trigger: el, start: "top 88%" },
+            scrollTrigger: {
+              trigger: el,
+              start: "top 85%",
+              toggleActions: "play none none none",
+            },
           });
         });
 
+        // GALERI REVEALS
+        gsap.to(".gallery-item", {
+          y: 0,
+          opacity: 1,
+          duration: 0.9,
+          stagger: 0.12,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: "#gallery-grid",
+            start: "top 85%",
+            toggleActions: "play none none none",
+          },
+        });
+
+        // SPLIT-TEXT HEADINGS
+        document.querySelectorAll(".split-heading").forEach((el) => {
+          splitWords(el);
+          gsap.set(el.querySelectorAll(".split-word"), { y: 15, opacity: 0 });
+          gsap.to(el.querySelectorAll(".split-word"), {
+            opacity: 1,
+            y: 0,
+            duration: 0.9,
+            ease: "power3.out",
+            stagger: { amount: 0.5 },
+            scrollTrigger: {
+              trigger: el,
+              start: "top 85%",
+              toggleActions: "play none none none",
+            },
+          });
+        });
+
+        // INTRO "Kisah Kami" (header kecil + judul) — reveal sederhana,
+        // terpisah dari foto/teks cerita yang di-crossfade (itu sekarang
+        // sepenuhnya ditangani initStorySection() agar tidak ada dua
+        // sistem animasi yang berebut elemen yang sama).
+        gsap.to(".story-intro", {
+          y: 0,
+          opacity: 1,
+          duration: 1.1,
+          stagger: 0.15,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: "#kisah-kami",
+            start: "top 85%",
+            toggleActions: "play none none none",
+          },
+        });
+
         initStorySection();
-        initStoryCards();
+
+        // Mulai lazy-load gambar galeri & story setelah animasi state
+        // awal terpasang, supaya transisi opacity img menyatu dengan
+        // pola .reveal lain (bukan kontributor lompatan terpisah).
+        initLazyMedia();
 
         // Web font (Cormorant Garamond/Cinzel) yang baru selesai load bisa
         // mengubah tinggi teks setelah ScrollTrigger dihitung pertama kali —
@@ -2027,152 +2167,188 @@
         }
       }
 
-      // ── KISAH KAMI: FOTO BACKGROUND SCROLL-REVEAL ───────────
-      // 4 foto (.story-card) di section "Kisah Kami" muncul satu-satu,
-      // berurutan dari atas ke bawah (sesuai urutan markup: card 1 → 4),
-      // begitu section mulai masuk viewport saat di-scroll.
-      // Fade + slide naik (translateY 48px → 0), trigger sekali saja
-      // (tidak reset kalau di-scroll ulang) supaya tidak mengganggu
-      // pembacaan teks di sebelahnya.
-      function initStoryCards() {
-        const cards = gsap.utils.toArray("#kisah-kami .story-card");
-        if (!cards.length) return;
+      // ── LAZY MEDIA (gallery + story background photos + maps iframe) ──
+      // Gambar TIDAK dimuat sekaligus di awal. Setiap <img data-src="...">
+      // baru di-assign ke `src` ketika elemen mendekati viewport (rootMargin
+      // memberi jarak supaya sudah siap SEBELUM benar-benar terlihat, jadi
+      // tidak ada jeda kosong).
+      //
+      // PERBAIKAN PENTING dari versi sebelumnya:
+      // 1) ScrollTrigger.refresh() SEBELUMNYA dipanggil setiap kali SATU
+      //    gambar selesai load. Kalau 9 gambar grid selesai hampir
+      //    berurutan (network cepat), itu artinya 9x recalculate seluruh
+      //    posisi trigger di halaman dalam waktu singkat — inilah yang
+      //    terasa sebagai "ngelag". Sekarang di-debounce: refresh hanya
+      //    dijadwalkan SEKALI, ditunda terus selama masih ada gambar lain
+      //    yang baru selesai dalam 150ms terakhir, baru benar-benar jalan.
+      // 2) Animasi fade-in sekarang 100% pakai GSAP (bukan campuran CSS
+      //    transition + GSAP opacity di elemen berbeda), supaya tidak ada
+      //    dua sistem animasi independen yang "berebut" frame dan membuat
+      //    transisi terasa terpotong / tiba-tiba muncul.
+      // 3) Gambar yang masuk viewport BERSAMAAN (grid rapat) tetap mulai
+      //    di-load dengan jeda kecil terjadwal (stagger), supaya urutan
+      //    "muncul satu-satu" benar-benar terkontrol, bukan tergantung
+      //    untungan urutan network response.
+      let _stRefreshTimer = null;
+      function scheduleScrollTriggerRefresh() {
+        if (
+          !window.ScrollTrigger ||
+          typeof ScrollTrigger.refresh !== "function"
+        )
+          return;
+        clearTimeout(_stRefreshTimer);
+        _stRefreshTimer = setTimeout(() => ScrollTrigger.refresh(), 150);
+      }
 
-        ScrollTrigger.create({
-          trigger: "#kisah-kami",
-          start: "top 75%",
-          once: true,
-          onEnter: () => {
-            gsap.to(cards, {
-              opacity: 0.6, // sama dengan opacity-60 di desain asli
-              y: 0,
-              duration: 1.1,
-              ease: "power3.out",
-              stagger: 0.28, // berurutan atas ke bawah, jeda antar foto
-            });
-          },
+      function revealLoadedImage(img) {
+        // Set lewat GSAP supaya satu sumber kebenaran dengan animasi lain,
+        // dan tidak bertabrakan dengan CSS transition manapun.
+        gsap.to(img, {
+          opacity: 1,
+          scale: 1,
+          duration: 0.7,
+          ease: "power2.out",
+          onComplete: scheduleScrollTriggerRefresh,
         });
       }
 
-      // ── STORY SECTION (Kisah Kami) ──────────────────────────
-      // Desktop: section di-pin, foto bergantian + paragraf muncul
-      // satu-satu mengikuti progres scroll (mudah dibaca, tidak ada
-      // 1 foto yang berdiri statis terus).
-      // Mobile: pin dimatikan (supaya tidak terasa "nyangkut" di HP),
-      // teks reveal seperti biasa & foto bergantian otomatis tiap interval.
-      function initStorySection() {
-        const photos = gsap.utils.toArray(".story-photo");
-        const dots = gsap.utils.toArray(".story-dot");
-        if (!photos.length) return;
+      function loadImageNow(img) {
+        const finalSrc = img.dataset.src;
+        if (!finalSrc || img.dataset.loading === "1") return;
+        img.dataset.loading = "1";
 
-        function setDot(i) {
-          dots.forEach((d, di) => {
-            if (di === i) {
-              d.classList.add("bg-ink");
-              d.classList.remove("bg-ink/25");
-            } else {
-              d.classList.remove("bg-ink");
-              d.classList.add("bg-ink/25");
-            }
+        const temp = new Image();
+        temp.onload = () => {
+          img.src = finalSrc;
+          requestAnimationFrame(() => revealLoadedImage(img));
+        };
+        temp.onerror = () => {
+          img.dispatchEvent(new Event("error"));
+        };
+        temp.src = finalSrc;
+      }
+
+      function initLazyMedia() {
+        const lazyImgs = document.querySelectorAll("img[data-src]");
+        const lazyIframe = document.querySelector("iframe[data-src]");
+
+        // Initial state seragam lewat GSAP (selaras dengan revealLoadedImage)
+        gsap.set(lazyImgs, { opacity: 0, scale: 1.04 });
+
+        if (!("IntersectionObserver" in window)) {
+          // fallback: load semua langsung kalau browser sangat lawas
+          lazyImgs.forEach((img) => {
+            img.src = img.dataset.src;
+            gsap.set(img, { opacity: 1, scale: 1 });
           });
+          if (lazyIframe) lazyIframe.src = lazyIframe.dataset.src;
+          return;
         }
 
-        const mm = gsap.matchMedia();
+        // STAGGER: gambar-gambar yang masuk viewport dalam satu batch
+        // intersection callback (misalnya grid galeri rapat yang semuanya
+        // "terdeteksi" di frame yang sama) tetap dimulai loading-nya dengan
+        // jeda kecil berurutan, supaya terasa "muncul satu-satu" yang
+        // benar-benar smooth, alih-alih 9 request dilepas bersamaan lalu
+        // urutan kemunculannya acak sesuai siapa duluan selesai network.
+        const STAGGER_MS = 90;
 
-        // ── DESKTOP: pinned scrollytelling ──
-        mm.add("(min-width: 768px)", () => {
-          const lines = gsap.utils.toArray(".story-line");
-          const dtl = gsap.timeline({
-            scrollTrigger: {
-              trigger: "#story-pin",
-              start: "top top",
-              end: "+=300%",
-              scrub: 1,
-              pin: true,
-              anticipatePin: 1,
-            },
-          });
+        const imgObserver = new IntersectionObserver(
+          (entries, observer) => {
+            const toLoad = [];
+            entries.forEach((entry) => {
+              if (!entry.isIntersecting) return;
+              toLoad.push(entry.target);
+              observer.unobserve(entry.target);
+            });
+            toLoad.forEach((img, i) => {
+              setTimeout(() => loadImageNow(img), i * STAGGER_MS);
+            });
+          },
+          { rootMargin: "200px 0px", threshold: 0.01 },
+        );
 
-          const STEP = 1; // jarak antar beat timeline (satuan relatif, di-scrub jadi proporsional ke scroll)
-          dtl.to(lines[0], { opacity: 1, y: 0, duration: 0.4 }, 0);
-          dtl.to(lines[1], { opacity: 1, y: 0, duration: 0.5 }, STEP * 0.6);
-          dtl.to(
-            photos[1],
-            { opacity: 1, duration: 0.6, onStart: () => setDot(1) },
-            STEP * 0.6,
-          );
-          dtl.to(lines[2], { opacity: 1, y: 0, duration: 0.5 }, STEP * 1.3);
-          dtl.to(
-            photos[2],
-            { opacity: 1, duration: 0.6, onStart: () => setDot(2) },
-            STEP * 1.3,
-          );
-          dtl.to(lines[3], { opacity: 1, y: 0, duration: 0.5 }, STEP * 2.0);
-          dtl.to(
-            photos[3],
-            { opacity: 1, duration: 0.6, onStart: () => setDot(3) },
-            STEP * 2.0,
-          );
-          dtl.to(lines[4], { opacity: 1, y: 0, duration: 0.5 }, STEP * 2.7);
-          dtl.to(
-            photos[4],
-            { opacity: 1, duration: 0.6, onStart: () => setDot(4) },
-            STEP * 2.7,
-          );
+        lazyImgs.forEach((img) => imgObserver.observe(img));
 
-          return () => dtl.scrollTrigger && dtl.scrollTrigger.kill();
-        });
-
-        // ── MOBILE: reveal biasa + carousel foto otomatis ──
-        mm.add("(max-width: 767px)", () => {
-          gsap.fromTo(
-            ".story-line",
-            { opacity: 0, y: 30 },
-            {
-              opacity: 1,
-              y: 0,
-              duration: 0.9,
-              stagger: { amount: 0.6 },
-              ease: "power2.out",
-              scrollTrigger: {
-                trigger: ".story-text",
-                start: "top 82%",
-                toggleActions: "play none none reverse",
-              },
-            },
-          );
-
-          let idx = 0;
-          let interval = null;
-          const section = document.getElementById("story-section");
-
-          function nextPhoto() {
-            const next = (idx + 1) % photos.length;
-            gsap.to(photos[next], { opacity: 1, duration: 0.9 });
-            setDot(next);
-            idx = next;
-          }
-
-          const io = new IntersectionObserver(
-            (entries) => {
+        // Google Maps iframe juga ditunda sampai mendekati viewport —
+        // mengurangi beban network/JS pihak ketiga di awal load.
+        if (lazyIframe) {
+          const iframeObserver = new IntersectionObserver(
+            (entries, observer) => {
               entries.forEach((entry) => {
-                if (entry.isIntersecting && !interval) {
-                  interval = setInterval(nextPhoto, 3200);
-                } else if (!entry.isIntersecting && interval) {
-                  clearInterval(interval);
-                  interval = null;
+                if (entry.isIntersecting) {
+                  lazyIframe.src = lazyIframe.dataset.src;
+                  observer.disconnect();
                 }
               });
             },
-            { threshold: 0.3 },
+            { rootMargin: "300px 0px" },
           );
-          if (section) io.observe(section);
+          iframeObserver.observe(lazyIframe);
+        }
+      }
 
-          return () => {
-            if (interval) clearInterval(interval);
-            io.disconnect();
-          };
+      // ── STORY SECTION (Kisah Kami) ──────────────────────────
+      // Empat foto diletakkan di POSISI BERBEDA-BEDA di kanvas yang sama
+      // (kiri-atas, kanan-bawah, dst — seperti susunan foto di meja).
+      // Tiap foto MUNCUL SATU-SATU (fade + sedikit gerak naik) sesuai
+      // progres scroll, sambil section tetap di-PIN — supaya scroll
+      // terasa panjang dan terasa seperti membuka lembar demi lembar
+      // cerita. Foto yang sudah muncul TETAP terlihat (tidak hilang lagi)
+      // selama foto berikutnya muncul.
+      //
+      // Foto SENGAJA hanya mencapai opacity 0.3 (bukan 1) supaya tetap
+      // terasa sebagai elemen dekoratif di belakang, dan teks cerita di
+      // sampingnya tetap mudah terbaca walau ada foto yang numpuk.
+      //
+      // Semua paragraf teks cerita TIDAK lagi gantian satu-satu — semua
+      // langsung ditampilkan sekaligus sejak section masuk (flow normal
+      // ke bawah, lihat .story-block-wrap di <style>). Yang dianimasikan
+      // mengikuti scroll HANYA foto-fotonya.
+      //
+      // Pin & urutan-muncul ini dijalankan juga di mobile (tidak di-skip).
+      function initStorySection() {
+        const photos = gsap.utils.toArray(".story-photo");
+        if (!photos.length) return;
+
+        const totalSteps = photos.length;
+
+        // State awal: semua foto belum kelihatan, foto pertama langsung
+        // tampak (di opacity 0.3) begitu section masuk.
+        gsap.set(photos, { opacity: 0, y: 28, scale: 0.96 });
+        gsap.set(photos[0], { opacity: 0.3, y: 0, scale: 1 });
+
+        const stl = gsap.timeline({
+          scrollTrigger: {
+            trigger: "#kisah-kami-pin",
+            start: "top top",
+            end: "+=" + totalSteps * 100 + "%",
+            scrub: 1,
+            pin: true,
+            anticipatePin: 1,
+            invalidateOnRefresh: true,
+          },
         });
+
+        // Satu "babak" per unit waktu timeline. Foto ke-(i) muncul ke
+        // opacity 0.3 dan TETAP terlihat (tidak di-fade-out lagi)
+        // sehingga tumpukan foto yang sudah tampil terus bertambah
+        // satu-satu — sesuai posisi unik masing-masing di kanvas (diatur
+        // lewat CSS, lihat style .story-photo[data-story-index]).
+        for (let i = 1; i < totalSteps; i++) {
+          const at = i - 1;
+          stl.to(
+            photos[i],
+            {
+              opacity: 0.2,
+              y: 0,
+              scale: 1,
+              duration: 0.6,
+              ease: "power2.out",
+            },
+            at + 0.35,
+          );
+        }
       }
 
       // ── KEN BURNS (1 foto) ───────────────────────────────────
@@ -2217,6 +2393,8 @@
 
         document.querySelectorAll(".gallery-item").forEach((btn) => {
           btn.addEventListener("click", () => {
+            // Pakai data-full kalau ada, atau src gambar saat ini (yang
+            // mungkin sudah di-lazy-load) sebagai fallback.
             const full = btn.dataset.full || btn.querySelector("img")?.src;
             const alt = btn.querySelector("img")?.alt;
             if (full) open(full, alt);
